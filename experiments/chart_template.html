@@ -1,0 +1,213 @@
+<title>Lunch Money Backtest Orders</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one phone-width column like a trading app's performance tab: header figure, bar chart, legend, month detail. */
+:root {
+  --bg: #07090b;
+  --card: #121b20;
+  --line: #2d3a40;
+  --fg: #eef2f3;
+  --muted: #8d9aa0;
+  --win: #3ecf7a;
+  --win-dim: rgba(62, 207, 122, 0.16);
+  --loss: #dfe4e6;
+  --pill: #11283c;
+  --pill-fg: #4ba3ec;
+  --neg: #f0726b;
+  --neg-pill: #3a1c1c;
+  --sel: rgba(255, 255, 255, 0.06);
+  --font: "Inter", -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #eef1f2; --card: #ffffff; --line: #d9e0e3; --fg: #0f1a1f; --muted: #5d6b71;
+    --win: #179a52; --win-dim: rgba(23, 154, 82, 0.13); --loss: #9aa6ab;
+    --pill: #e3f0fb; --pill-fg: #1f6fb5; --neg: #c8382f; --neg-pill: #fbe7e5; --sel: rgba(0, 0, 0, 0.04);
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #eef1f2; --card: #ffffff; --line: #d9e0e3; --fg: #0f1a1f; --muted: #5d6b71;
+  --win: #179a52; --win-dim: rgba(23, 154, 82, 0.13); --loss: #9aa6ab;
+  --pill: #e3f0fb; --pill-fg: #1f6fb5; --neg: #c8382f; --neg-pill: #fbe7e5; --sel: rgba(0, 0, 0, 0.04);
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font);
+  font-variant-numeric: tabular-nums;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 24px 40px;
+}
+main { max-width: 620px; margin: 0 auto; display: grid; gap: 18px; }
+h1 { font-size: 1.75rem; font-weight: 700; margin: 0; letter-spacing: -0.01em; }
+.sub { color: var(--muted); margin: 4px 0 0; line-height: 1.45; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.seg { display: inline-flex; background: var(--card); border-radius: 999px; padding: 3px; gap: 2px; flex-wrap: wrap; }
+.seg button {
+  font: inherit; font-size: 0.85rem; font-weight: 500; color: var(--muted); background: none; border: 0;
+  padding: 6px 12px; border-radius: 999px; cursor: pointer;
+}
+.seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.seg button:focus-visible, svg rect.hit:focus-visible { outline: 2px solid var(--pill-fg); outline-offset: 2px; }
+.card { background: var(--card); border-radius: 22px; padding: 22px 20px 18px; display: grid; gap: 14px; min-width: 0; }
+.head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.big { font-size: 1.9rem; font-weight: 600; }
+.big small { font-size: 0.85rem; color: var(--muted); font-weight: 500; margin-left: 6px; }
+.pill { background: var(--pill); color: var(--pill-fg); border-radius: 999px; padding: 7px 14px; font-weight: 500; white-space: nowrap; }
+.pill.neg { background: var(--neg-pill); color: var(--neg); }
+.axis-label { color: var(--muted); font-size: 0.9rem; margin-bottom: -6px; }
+.chart { width: 100%; overflow-x: auto; }
+svg { display: block; width: 100%; height: auto; }
+svg text { fill: var(--muted); font-family: var(--font); font-size: 12px; }
+.legend { display: flex; gap: 22px; flex-wrap: wrap; font-size: 1rem; }
+.legend span { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); }
+.legend b { color: var(--fg); font-weight: 600; }
+.dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.detail { border-top: 1px solid var(--line); padding-top: 14px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.detail div { display: grid; gap: 3px; }
+.detail .k { color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.detail .v { font-weight: 600; font-size: 1.05rem; }
+.detail .title { grid-column: 1 / -1; font-weight: 600; }
+.up { color: var(--win); } .down { color: var(--neg); }
+.note { color: var(--muted); font-size: 0.82rem; line-height: 1.5; margin: 0; }
+@media (max-width: 440px) { .detail { grid-template-columns: repeat(2, minmax(0, 1fr)); } .big { font-size: 1.6rem; } }
+</style>
+
+<main>
+  <header>
+    <h1>Backtest orders</h1>
+    <p class="sub">Reaction-zone entries, 0.01 lots, the $10 account is the stop, held until target or stop-out. Real Dukascopy ticks at a $0.20 spread.</p>
+  </header>
+
+  <div class="controls">
+    <div class="seg" id="rr" role="group" aria-label="Reward to risk"></div>
+    <div class="seg" id="period" role="group" aria-label="Period"></div>
+  </div>
+
+  <section class="card" aria-label="Total orders">
+    <div class="head">
+      <div class="big" id="total"></div>
+      <div class="pill" id="net"></div>
+    </div>
+    <div class="axis-label">Orders</div>
+    <div class="chart" id="chart"></div>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--win)"></i>Profitable <b id="wins"></b></span>
+      <span><i class="dot" style="background:var(--loss)"></i>Stopped out <b id="losses"></b></span>
+    </div>
+    <div class="detail" id="detail"></div>
+  </section>
+
+  <p class="note">Each order risks $10 (account stop-out) for +$30 (1:3) or +$50 (1:5). Break-even win rate is 25% at 1:3 and 16.7% at 1:5. Overnight swap is not included. Backtest only; past results do not predict future ones.</p>
+</main>
+
+<script>
+const DATA = /*DATA*/null;
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const NS = "http://www.w3.org/2000/svg";
+const state = { rr: "1:5", period: "All", sel: null };
+const years = [...new Set(Object.keys(DATA["1:5"]).map(k => k.slice(0, 4)))].sort();
+
+function seg(el, values, key) {
+  el.innerHTML = "";
+  for (const v of values) {
+    const b = document.createElement("button");
+    b.type = "button"; b.textContent = v; b.id = `${key}-${v.replace(/\W/g, "")}`;
+    b.setAttribute("aria-pressed", String(state[key] === v));
+    b.onclick = () => { state[key] = v; state.sel = null; render(); };
+    el.appendChild(b);
+  }
+}
+
+function buckets() {
+  const d = DATA[state.rr];
+  if (state.period === "All") {
+    return years.map(y => {
+      const ms = Object.entries(d).filter(([k]) => k.startsWith(y)).map(([, v]) => v);
+      return { label: y, short: "'" + y.slice(2), n: ms.reduce((a, v) => a + v[0], 0),
+               w: ms.reduce((a, v) => a + v[1], 0), net: ms.reduce((a, v) => a + v[2], 0) };
+    });
+  }
+  return MONTHS.map((m, i) => {
+    const v = d[`${state.period}-${String(i + 1).padStart(2, "0")}`];
+    return { label: `${m} ${state.period}`, short: m, n: v ? v[0] : 0, w: v ? v[1] : 0, net: v ? v[2] : 0, missing: !v };
+  });
+}
+
+function niceScale(x) {
+  const step = [5, 10, 20, 25, 50, 100, 200, 250, 500].find(s => x / s <= 4) || 1000;
+  return { step, max: Math.max(step, Math.ceil(x / step) * step) };
+}
+
+const money = x => (x < 0 ? "−$" : "+$") + Math.abs(x).toLocaleString("en-US", { maximumFractionDigits: 0 });
+
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+  parent.appendChild(e); return e;
+}
+
+function drawChart(bs) {
+  const W = 560, H = 300, L = 44, R = 8, T = 10, B = 30;
+  const { step, max } = niceScale(Math.max(1, ...bs.map(b => b.n)));
+  const y = v => T + (H - T - B) * (1 - v / max);
+  const svg = document.createElementNS(NS, "svg");
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", `Orders per ${state.period === "All" ? "year" : "month"}: profitable and stopped out`);
+  for (let v = 0; v <= max; v += step) {
+    el("line", { x1: L, x2: W - R, y1: y(v), y2: y(v), stroke: "var(--line)", "stroke-width": 1 }, svg);
+    el("text", { x: L - 8, y: y(v) + 4, "text-anchor": "end" }, svg).textContent = v;
+  }
+  const slot = (W - L - R) / bs.length, bw = Math.min(slot * 0.72, 48), nw = bw * 0.32;
+  const showEvery = bs.length > 8 && W / bs.length < 50 ? 3 : 1;
+  bs.forEach((b, i) => {
+    const cx = L + slot * (i + 0.5);
+    if (state.sel === i) el("rect", { x: cx - slot / 2, y: T, width: slot, height: H - T - B, fill: "var(--sel)", rx: 6 }, svg);
+    if (b.n) {
+      el("rect", { x: cx - bw / 2, y: y(b.n), width: bw, height: y(0) - y(b.n), fill: "var(--win-dim)", rx: 2 }, svg);
+      const l = b.n - b.w;
+      if (l) el("rect", { x: cx - nw - 2, y: y(l), width: nw, height: y(0) - y(l), fill: "var(--loss)", rx: 1.5 }, svg);
+      if (b.w) el("rect", { x: cx + 2, y: y(b.w), width: nw, height: y(0) - y(b.w), fill: "var(--win)", rx: 1.5 }, svg);
+    }
+    if (i % showEvery === 0 || bs.length <= 12)
+      el("text", { x: cx, y: H - 8, "text-anchor": "middle" }, svg).textContent = b.short;
+    const hit = el("rect", { x: cx - slot / 2, y: T, width: slot, height: H - T, fill: "transparent",
+                             class: "hit", tabindex: 0, role: "button", "aria-label": `${b.label}: ${b.n} orders` }, svg);
+    hit.style.cursor = "pointer";
+    const pick = () => { state.sel = state.sel === i ? null : i; render(); };
+    hit.addEventListener("click", pick);
+    hit.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
+  });
+  el("line", { x1: L, x2: W - R, y1: y(0), y2: y(0), stroke: "var(--muted)", "stroke-width": 1 }, svg);
+  return svg;
+}
+
+function render() {
+  seg(document.getElementById("rr"), Object.keys(DATA), "rr");
+  seg(document.getElementById("period"), ["All", ...years], "period");
+  const bs = buckets();
+  const n = bs.reduce((a, b) => a + b.n, 0), w = bs.reduce((a, b) => a + b.w, 0), net = bs.reduce((a, b) => a + b.net, 0);
+  document.getElementById("total").innerHTML = `${n.toLocaleString()}<small>${state.period === "All" ? "2019–2026" : state.period}</small>`;
+  const pill = document.getElementById("net");
+  pill.textContent = `${net < 0 ? "↓" : "↑"} ${money(net)} net`;
+  pill.classList.toggle("neg", net < 0);
+  document.getElementById("wins").textContent = w.toLocaleString();
+  document.getElementById("losses").textContent = (n - w).toLocaleString();
+  const c = document.getElementById("chart"); c.innerHTML = ""; c.appendChild(drawChart(bs));
+  const s = state.sel != null ? bs[state.sel] : { label: state.period === "All" ? "All years" : state.period, n, w, net };
+  const wr = s.n ? (100 * s.w / s.n).toFixed(1) + "%" : "–";
+  document.getElementById("detail").innerHTML =
+    `<div class="title">${s.label}${state.sel == null ? " · tap a bar for details" : ""}</div>` +
+    `<div><span class="k">Orders</span><span class="v">${s.n}</span></div>` +
+    `<div><span class="k">Profitable</span><span class="v up">${s.w}</span></div>` +
+    `<div><span class="k">Win rate</span><span class="v">${wr}</span></div>` +
+    `<div><span class="k">Net</span><span class="v ${s.net < 0 ? "down" : "up"}">${s.n ? money(s.net) : "–"}</span></div>`;
+}
+render();
+</script>
