@@ -47,7 +47,8 @@ class DailyRiskRules:
     stop_after_wins: int | None = None    # None: 1 if stop_after_win else 0
     stop_after_losses: int = 0
     min_stop: float = 0.0
-    fixed_lots: float | None = None
+    fixed_lots: float | None = None   # trade this size regardless of the stop; trades without a stop allowed
+    use_strategy_lots: bool = False   # trade the size the strategy asks for; trades without a stop allowed
     weekly_loss_limit: float = 0.0
     monthly_loss_limit: float = 0.0   # trade this size regardless of the stop; trades without a stop allowed
 
@@ -80,7 +81,8 @@ class DailyRiskRules:
     def _state(self, day: int) -> DayState:
         return self.days.setdefault(day, DayState())
 
-    def approve(self, broker, side: int, type: OrderType, price: float | None, sl: float | None) -> float | None:
+    def approve(self, broker, side: int, type: OrderType, price: float | None, sl: float | None,
+                lots: float | None = None) -> float | None:
         """Return the lot size to use, or None to block the order."""
         tick = broker.tick
         st = self._state(self.day_of(tick.ts))
@@ -95,6 +97,10 @@ class DailyRiskRules:
                 (self.monthly_loss_limit and self.month_pnl.get(self.month_of(day), 0.0) <= -self.monthly_loss_limit + 1e-9):
             self.stats["blocked_period_limit"] += 1
             return None
+        if self.use_strategy_lots and lots:
+            st.trades += 1
+            self.stats["approved"] += 1
+            return lots
         if self.fixed_lots:
             st.trades += 1
             self.stats["approved"] += 1

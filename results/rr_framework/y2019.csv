@@ -1,0 +1,3 @@
+year,variant,costs,trades,net,Q1,Q2,Q3,Q4,q_positive,win_rate,avg_R,tstat,max_dd,skipped_tight,skipped_wide,long_trades,long_net,short_net
+2019,"1:3, held until target or stop-out",$0.20,62,-95.47,-29.95,-9.88,-79.83,24.19,1,21.0,-0.154,-0.74,-159.76,0,0,38,24.47,-119.93
+2019,"1:5, held until target or stop-out",$0.20,48,-145.25,-90.0,-9.65,-44.24,-1.36,0,12.5,-0.303,-1.11,-183.89,0,0,29,-0.82,-144.43

@@ -93,7 +93,7 @@ class Strategy:
         """Send an order. With risk rules active, returns None when the rules block it, and
         replaces ``lots`` with the risk-based size."""
         if self.risk is not None:
-            sized = self.risk.approve(self.broker, side, type, price, sl)
+            sized = self.risk.approve(self.broker, side, type, price, sl, lots=lots)
             if sized is None:
                 return None
             order = self.broker.submit(side, sized, type, price, sl, tp, expiry_ms, tag)

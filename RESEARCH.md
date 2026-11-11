@@ -4,7 +4,7 @@
 
 | Candidate | Settings | Status |
 |---|---|---|
-| **Reaction zone, wick ≥ 30%** (your method, rule-based) | `results/candidates/reaction_zone_wick30.json` | **Most promising.** Passed two clean, locked tests: 2020 +$123 and 2021 +$140 at $0.20. 2020–2026: 6 of 7 years positive, about +$1,150. Next clean test locked for 2019. |
+| **Reaction zone, wick ≥ 30%** (your method, rule-based) | `results/candidates/reaction_zone_wick30.json` | **Most promising.** Clean, locked tests: 2020 +$123 PASS, 2021 +$140 PASS, 2019 −$23 narrow FAIL (+$12 before costs). 2019–2026: 6 of 8 years positive, about +$1,130. Settings map: all 48 neighbouring settings positive over 2021–2026. Volatility-scaled sizing rejected. 2018 test locked, waiting for data. |
 | New York opening-range breakout, half-range stop | `results/candidates/ny_breakout_half_stop.json` | Weakened. +$837 over 2022–2026 but **failed the clean 2021 test (−$361)**. |
 
 All tests use real Dukascopy ticks (2022–2025), the simulated broker in `xautest/`, and the same rules:
@@ -247,3 +247,67 @@ Reaction zone with wick ≥ 30% by year at $0.20: 2021 +$140, 2022 +$218, 2023 �
   2023–2026 total **$0** vs **+$738** for the fixed 13:30 | 0.5 candidate. Re-tuning chases noise; keep
   settings fixed.
 - Does not change the verdict: the candidate failed the clean 2021 test (−$361).
+
+
+### Clean 2019 test (locked in `results/locked_for_2019.json`, run once)
+
+2019: gold +18%, $1,266–1,557, the lowest price level tested. Reaction zone, wick ≥ 30%, unchanged:
+zero cost +$12 (break-even), **$0.20 −$23 (FAIL, narrowly)**, +$0.10 slippage −$53; 167 trades, 49% winners.
+
+How trades ended (single-run check): 2019 — 27 of 170 hit the $10 target (16%), 137 closed at 20:00 UTC
+(−$214), 6 account stop-outs; typical best move in favour $3.38/oz. 2021 — 63 of 154 hit the target (41%),
+82 closed at 20:00 (−$318); typical best move $7.08/oz. The entries break even in 2019; the fixed-dollar
+target does not fit years when gold's moves are small. Scaling the target with volatility is a new idea and
+would need a fresh year (e.g. 2018) to test cleanly.
+
+### The user's risk framework: the account is the stop loss (`experiments/rr_framework.py`)
+
+$10 account per trade (stop-out at $0 = −$10 max, negative balance protection), 0.01 lots, no stop loss,
+take profit at 1:3 / 1:5 / 1:8 (+$30 / +$50 / +$80). Entries: the reaction-zone candidate, unchanged.
+Targets were set by the user in advance, not fitted.
+
+| $0.20, 2020–2026 | Total | Years positive | Win rate (break-even) | Per trade | Worst drawdown |
+|---|---|---|---|---|---|
+| **1:5, held until target or stop-out** | **+$1,330** | 6/7 | 21% (17%) | +$1.95 | −$338 |
+| 1:3, held | +$1,171 | 6/7 | 29% (25%) | +$1.43 | −$288 |
+| 1:8, held | +$985 | 5/7 | 15% (11%) | +$1.69 | −$408 |
+| 1:3 / 1:5 / 1:8, closed by 20:00 UTC | +$575 to +$642 | 5/7 | ~42% | ~+$0.55 | about −$270 to −$316 |
+
+- Holding to target beats closing intraday; 2026 lost in every version (−$145 to −$213).
+- 2019 (used once before): 1:3 held −$95 (21% winners), 1:5 held −$145 (12.5%). Big fixed-dollar targets
+  struggle in quiet, low-price years.
+- Held trades stay open a long time: 1:5 in 2024 — median 23 hours, 66% held overnight, 178 nights in the
+  year; 2025 — median 5 hours, 33% overnight, 99 nights; longest 326 hours. **Swap (overnight fees) is not
+  modelled yet** and could take a large share of profit (e.g. $0.50/night at 0.01 lots ≈ −$90 in 2024).
+- Outcomes are all-or-nothing (+$50 or −$10): 2025 had 28 targets (+$1,402) and 101 stop-outs (−$1,010),
+  so long losing streaks are normal.
+
+### Volatility-scaled size (`experiments/rr_scaled.py`, 2019–2026, $0.20, $10 account)
+
+Idea: in quiet markets buy more lots so the $10 stop-out sits at 25% of the 14-day average daily range,
+target = 3× or 5× that distance (still −$10 / +$30 or +$50). Never below 0.01 lots, so busy years are unchanged.
+
+| Version | 2019 | 2020 | 2021 | 2022 | 2023 | 2024 | 2025 | 2026 | Total | Years + | Worst DD |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1:3 held, scaled | −134 | +150 | −13 | −59 | +108 | +162 | +452 | −198 | +468 | 4/8 | −339 |
+| 1:5 held, scaled | −101 | +137 | −33 | −118 | +387 | +217 | +404 | −228 | +664 | 4/8 | −325 |
+| **1:3 held, fixed 0.01** | −95 | +169 | +68 | +195 | +217 | +195 | +533 | −208 | **+1,075** | **6/8** | −288 |
+| **1:5 held, fixed 0.01** | −145 | +191 | +155 | +154 | +267 | +337 | +424 | −197 | **+1,185** | **6/8** | −338 |
+
+**Rejected.** Scaling did not rescue 2019 or 2026 and cost money in 2021–2023: a tighter stop-out in quiet
+markets gets hit by ordinary noise. Fixed 0.01 lots stays. The 2018 lock (`results/locked_for_2018.json`)
+was amended before any 2018 data was downloaded to include the fixed-lot 1:3 / 1:5 versions as primary.
+
+### Reaction-zone settings map (`experiments/rz_grid.py`, 2021–2026, $0.20, intraday, $10 TP framework)
+
+48 settings around the candidate: wick 25/30/35/40% × TP $7.5/10/12.5/15 × swing lookback 12/20/32.
+
+- **All 48 settings are positive over 2021–2026** (median +$672); 26 are positive in at least 5 of 6 years.
+  The candidate (wick 30%, TP $10, lookback 20: +$1,028) ranks 2nd of 48. Its neighbours are close
+  (lookback 12: +$1,073; wick 25%: +$992), so it sits on a plateau, not a lone spike.
+- Wick 25–30% is clearly better than 35–40% (averages $844 / $857 vs $549 / $384). TP $10 is the best
+  target on average; lookback matters little.
+- 2023 is the weak year for almost every setting (only TP $7.5 versions are positive). 2022 and 2025 are
+  strong for all.
+- Caveat: 2021–2026 were partly used to pick the candidate, so this map shows robustness, not new evidence.
+  The clean evidence remains the locked tests (2020 and 2021 pass, 2019 narrow fail) and the pending 2018 test.

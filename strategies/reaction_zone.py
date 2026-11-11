@@ -14,6 +14,10 @@
   when             entries only inside `sessions` (UTC windows, e.g. "12:30-16:00" for the New York open);
                    anything open is closed at flat_hour UTC.
 
+Sizing (size_mode="atr"): keep a fixed dollar risk (account_risk, the $10 account) but choose the lot size so
+the stop-out distance is stop_atr_frac x the 14-day average daily range; with rr > 0 the target is rr times
+that distance (so +rr x account_risk in dollars). Never below 0.01 lots. size_mode="fixed" uses `lots`.
+
 A fair value gap: candle 1's high below candle 3's low (bullish, support) or candle 1's low above candle 3's
 high (bearish, resistance). It stays a zone until price trades through it or it is max_fvg_age candles old.
 """
@@ -21,7 +25,7 @@ from collections import deque
 from dataclasses import dataclass
 
 from xautest.bars import BarBuilder
-from xautest.indicators import MACD, RSI, SuperTrend
+from xautest.indicators import ATR, MACD, RSI, SuperTrend
 from xautest.models import BUY, SELL
 from xautest.strategy import Strategy
 
@@ -100,11 +104,16 @@ class ReactionZone(Strategy):
         "flat_hour": 20,
         "max_spread": 0.60,
         "exec_mode": "m1",
+        "size_mode": "fixed",
+        "account_risk": 10.0,
+        "stop_atr_frac": 0.25,
+        "rr": 0.0,
     }
 
     def on_start(self):
         p = self.p
         self.b1h, self.b15, self.b5, self.b1 = (BarBuilder(tf) for tf in ("1h", "15min", "5min", "1min"))
+        self.bday, self.datr = BarBuilder("1d"), ATR(14)
         self.h1_st, self.h1_macd = SuperTrend(10, 3.0), MACD()
         self.fvg_h1, self.fvg_15 = FVGTracker(p.max_fvg_age), FVGTracker(p.max_fvg_age)
         self.m15_rsi = RSI(14)
@@ -117,6 +126,9 @@ class ReactionZone(Strategy):
 
     # ---------------------------------------------------------------- routing
     def on_tick(self, t):
+        bar = self.bday.update(t)
+        if bar is not None:
+            self.datr.update(bar)
         bar = self.b1h.update(t)
         if bar is not None:
             self.h1_st.update(bar); self.h1_macd.update(bar.close); self.fvg_h1.update(bar)
@@ -236,6 +248,14 @@ class ReactionZone(Strategy):
             return
         self._execute(s, t)
 
+    def scaled_size(self) -> tuple[float, float]:
+        """(lots, stop-out distance in USD/oz) for a fixed dollar risk at stop_atr_frac x daily ATR."""
+        p = self.p
+        target = max(p.stop_atr_frac * self.datr.value, 1e-9)
+        lots = max(0.01, int(p.account_risk / (target * 100) / 0.01 + 1e-9) * 0.01)
+        lots = round(lots, 2)
+        return lots, p.account_risk / (lots * 100)
+
     def _execute(self, s, t):
         if self.positions or self.orders:
             return
@@ -246,14 +266,21 @@ class ReactionZone(Strategy):
         p = self.p
         if t.spread > p.max_spread:
             return
+        lots, tp_dist = p.lots, p.tp_usd
+        if p.size_mode == "atr":
+            if not self.datr.ready:
+                return
+            lots, stop_dist = self.scaled_size()
+            if p.rr > 0:
+                tp_dist = p.rr * stop_dist
         if s.side == SELL:
-            tp = t.bid - p.tp_usd
+            tp = t.bid - tp_dist
             sl = s.wick + t.spread + p.sl_buffer if p.sl_mode == "wick" else None
-            order = self.sell(p.lots, sl=sl, tp=tp)
+            order = self.sell(lots, sl=sl, tp=tp)
         else:
-            tp = t.ask + p.tp_usd
+            tp = t.ask + tp_dist
             sl = s.wick - p.sl_buffer if p.sl_mode == "wick" else None
-            order = self.buy(p.lots, sl=sl, tp=tp)
+            order = self.buy(lots, sl=sl, tp=tp)
         if order is not None:
             self.stats["executed"] += 1
             self.setup = None

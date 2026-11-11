@@ -1,0 +1,4 @@
+year,variant,costs,trades,net,Q1,Q2,Q3,Q4,q_positive,win_rate,avg_R,tstat,max_dd,skipped_tight,skipped_wide,long_trades,long_net,short_net
+2019,"reaction zone, wick >= 30%",zero cost,167,12.22,4.67,-4.35,-27.33,39.22,2,50.3,0.007,0.14,-83.6,0,0,92,-0.99,13.2
+2019,"reaction zone, wick >= 30%",$0.20,167,-23.08,-6.18,-11.4,-38.01,32.52,1,49.1,-0.014,-0.25,-92.84,0,0,92,-21.22,-1.85
+2019,"reaction zone, wick >= 30%",$0.20 + $0.10 slippage,167,-52.88,-14.88,-19.2,-43.71,24.92,1,47.9,-0.032,-0.58,-100.6,0,0,92,-37.32,-15.55

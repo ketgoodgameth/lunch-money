@@ -111,3 +111,17 @@ def test_exec_on_5m_confirmation():
     s.on_m5(Bar(DAY0 + 13 * H + 15 * M, 3003.0, 3003.5, 3001.8, 3002.0), t)
     (p,) = s.positions
     assert p.side == SELL and p.tp == pytest.approx(3002.0 - 10.0)
+
+
+def test_volatility_scaled_size_keeps_dollar_risk_and_rr():
+    s = make(size_mode="atr", account_risk=10.0, stop_atr_frac=0.25, rr=5.0)
+    s.datr = Stub(ready=True, value=13.0)          # quiet market: daily range $13
+    assert s.scaled_size() == (0.03, pytest.approx(10.0 / 3))
+    s.datr = Stub(ready=True, value=45.0)          # busy market: daily range $45 -> minimum 0.01 lots
+    assert s.scaled_size() == (0.01, pytest.approx(10.0))
+    s.datr = Stub(ready=True, value=13.0)
+    s.risk = __import__("xautest.risk", fromlist=["DailyRiskRules"]).DailyRiskRules(use_strategy_lots=True, max_trades=2)
+    s.on_m15(Bar(DAY0 + 13 * H, 3002.0, 3008.0, 3001.0, 3003.0))
+    run_to_entry(s)
+    (p,) = s.positions
+    assert p.lots == 0.03 and p.sl is None and p.tp == pytest.approx(3002.0 - 5 * 10.0 / 3)

@@ -1,6 +1,6 @@
 {
   "name": "Reaction zone (user's method, mechanical), wick >= 30%",
-  "status": "promising: passed two clean, locked tests (2020 +$123, 2021 +$140 at $0.20)",
+  "status": "promising but mixed: clean tests 2020 +$123 and 2021 +$140 passed; 2019 narrow fail (-$23; +$12 before costs). The fixed $10 target is often out of reach in low-volatility years.",
   "saved_at": "2026-11-11T14:46:21.450155+00:00",
   "strategy_file": "strategies/reaction_zone.py",
   "params": {
@@ -24,6 +24,7 @@
   },
   "costs_assumed": "$0.20 spread, no commission",
   "backtest_net_at_0.20": {
+    "2019": -23,
     "2020": 123,
     "2021": 140,
     "2022": 218,

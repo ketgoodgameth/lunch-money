@@ -17,6 +17,7 @@ from xautest.models import dt_to_ms                      # noqa: E402
 
 TICKS = ROOT / "ticks" / "dukascopy"
 YEAR_FILES = {
+    2018: "download/xauusd-tick-2018-01-01-2019-01-01.csv",
     2019: "download/xauusd-tick-2019-01-01-2020-01-01.csv",
     2020: "download/xauusd-tick-2020-01-01-2021-01-01.csv",
     2021: "download/xauusd-tick-2021-01-01-2022-01-01.csv",
