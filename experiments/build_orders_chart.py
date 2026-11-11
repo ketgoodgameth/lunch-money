@@ -37,7 +37,8 @@ if __name__ == "__main__":
     for label, (src, key, desc, rule) in VERSIONS.items():
         df = hw[hw.variant == key] if src == "hw" else \
             pd.read_csv(ROOT / "results" / "rr_framework" / "trades" / f"trades_1to{key}.csv")
-        data[label], info[label] = monthly(df), [desc, rule]
+        w, l = df.net_pnl[df.net_pnl > 0].mean(), df.net_pnl[df.net_pnl <= 0].mean()
+        data[label], info[label] = monthly(df), [desc, rule, round(100 * -l / (w - l), 1)]   # break-even win rate
     html = (ROOT / "experiments" / "chart_template.html").read_text() \
         .replace("/*DATA*/null", json.dumps(data)).replace("/*INFO*/null", json.dumps(info))
     out = ROOT / "results" / "charts"
