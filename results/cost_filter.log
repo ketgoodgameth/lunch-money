@@ -1,0 +1,148 @@
+2022: 36 backtests on 8 workers
+  24/36 (167s)
+  36/36 (264s)
+  done in 264s
+2023: 36 backtests on 8 workers
+  24/36 (141s)
+  36/36 (213s)
+  done in 213s
+2024: 36 backtests on 8 workers
+  24/36 (193s)
+  36/36 (282s)
+  done in 282s
+2025: 36 backtests on 8 workers
+  24/36 (228s)
+  36/36 (312s)
+  done in 313s
+2022: 36 backtests on 8 workers
+  24/36 (70s)
+  36/36 (109s)
+  done in 109s
+2023: 36 backtests on 8 workers
+  24/36 (49s)
+  36/36 (73s)
+  done in 73s
+2024: 36 backtests on 8 workers
+  24/36 (81s)
+  36/36 (116s)
+  done in 116s
+2025: 36 backtests on 8 workers
+  24/36 (117s)
+  36/36 (151s)
+  done in 151s
+
+== net P&L ==
+costs                                                      zero cost  Standard $0.20  Raw A $0.05+$3.5/side
+year variant                                                                                               
+2022 A 1m sweep + 1H trend | no filter                       -200.13        -1049.23                -763.64
+     A 1m sweep + 1H trend | stops >= $4.00 (Raw A 3%)         98.15           73.26                  86.32
+     A 1m sweep + 1H trend | stops >= $6.67 (Standard 3%)      34.87           33.12                  34.26
+     B trend pullback 5m | no filter                         -234.70         -702.07                -618.42
+     B trend pullback 5m | stops >= $4.00 (Raw A 3%)          228.16          145.63                 110.47
+     B trend pullback 5m | stops >= $6.67 (Standard 3%)       -93.44         -113.67                -115.88
+2023 A 1m sweep + 1H trend | no filter                        116.17         -983.47                -472.02
+     A 1m sweep + 1H trend | stops >= $4.00 (Raw A 3%)        -25.30          -25.19                  -2.81
+     A 1m sweep + 1H trend | stops >= $6.67 (Standard 3%)     -13.86          -14.72                 -14.14
+     B trend pullback 5m | no filter                         -340.49         -984.23                -752.10
+     B trend pullback 5m | stops >= $4.00 (Raw A 3%)          -21.82          -49.18                 -23.80
+     B trend pullback 5m | stops >= $6.67 (Standard 3%)        15.37           11.27                  11.74
+2024 A 1m sweep + 1H trend | no filter                        248.42         -612.22                -384.12
+     A 1m sweep + 1H trend | stops >= $4.00 (Raw A 3%)       -108.36         -122.09                -112.78
+     A 1m sweep + 1H trend | stops >= $6.67 (Standard 3%)     -23.53          -40.34                 -25.58
+     B trend pullback 5m | no filter                          -25.69         -349.23                -226.24
+     B trend pullback 5m | stops >= $4.00 (Raw A 3%)          194.41          102.70                 142.93
+     B trend pullback 5m | stops >= $6.67 (Standard 3%)        10.41          -37.27                  -0.21
+2025 A 1m sweep + 1H trend | no filter                        253.97         -149.99                  19.23
+     A 1m sweep + 1H trend | stops >= $4.00 (Raw A 3%)       -255.99         -344.63                -282.09
+     A 1m sweep + 1H trend | stops >= $6.67 (Standard 3%)     -47.14          -80.27                 -32.59
+     B trend pullback 5m | no filter                          424.08          328.02                 354.61
+     B trend pullback 5m | stops >= $4.00 (Raw A 3%)          253.92          144.90                 192.00
+     B trend pullback 5m | stops >= $6.67 (Standard 3%)      -123.93         -102.73                -143.90
+
+== per-trade result (R) ==
+costs                                                      zero cost  Standard $0.20  Raw A $0.05+$3.5/side
+year variant                                                                                               
+2022 A 1m sweep + 1H trend | no filter                        -0.046          -0.227                 -0.173
+     A 1m sweep + 1H trend | stops >= $4.00 (Raw A 3%)         0.185           0.120                  0.157
+     A 1m sweep + 1H trend | stops >= $6.67 (Standard 3%)      0.291           0.276                  0.285
+     B trend pullback 5m | no filter                          -0.053          -0.151                 -0.137
+     B trend pullback 5m | stops >= $4.00 (Raw A 3%)           0.095           0.060                  0.045
+     B trend pullback 5m | stops >= $6.67 (Standard 3%)       -0.246          -0.284                 -0.297
+2023 A 1m sweep + 1H trend | no filter                         0.028          -0.219                 -0.109
+     A 1m sweep + 1H trend | stops >= $4.00 (Raw A 3%)        -0.052          -0.041                 -0.005
+     A 1m sweep + 1H trend | stops >= $6.67 (Standard 3%)     -0.198          -0.210                 -0.202
+     B trend pullback 5m | no filter                          -0.077          -0.213                 -0.167
+     B trend pullback 5m | stops >= $4.00 (Raw A 3%)          -0.011          -0.025                 -0.012
+     B trend pullback 5m | stops >= $6.67 (Standard 3%)        0.043           0.031                  0.033
+2024 A 1m sweep + 1H trend | no filter                         0.061          -0.140                 -0.091
+     A 1m sweep + 1H trend | stops >= $4.00 (Raw A 3%)        -0.101          -0.105                 -0.101
+     A 1m sweep + 1H trend | stops >= $6.67 (Standard 3%)     -0.138          -0.212                 -0.150
+     B trend pullback 5m | no filter                          -0.006          -0.076                 -0.050
+     B trend pullback 5m | stops >= $4.00 (Raw A 3%)           0.061           0.032                  0.045
+     B trend pullback 5m | stops >= $6.67 (Standard 3%)        0.010          -0.035                  0.000
+2025 A 1m sweep + 1H trend | no filter                         0.062          -0.036                  0.005
+     A 1m sweep + 1H trend | stops >= $4.00 (Raw A 3%)        -0.089          -0.115                 -0.097
+     A 1m sweep + 1H trend | stops >= $6.67 (Standard 3%)     -0.041          -0.066                 -0.028
+     B trend pullback 5m | no filter                           0.101           0.076                  0.084
+     B trend pullback 5m | stops >= $4.00 (Raw A 3%)           0.063           0.036                  0.048
+     B trend pullback 5m | stops >= $6.67 (Standard 3%)       -0.040          -0.033                 -0.047
+
+== trades ==
+costs                                                      zero cost  Standard $0.20  Raw A $0.05+$3.5/side
+year variant                                                                                               
+2022 A 1m sweep + 1H trend | no filter                         434.0           462.0                  441.0
+     A 1m sweep + 1H trend | stops >= $4.00 (Raw A 3%)          53.0            61.0                   55.0
+     A 1m sweep + 1H trend | stops >= $6.67 (Standard 3%)       12.0            12.0                   12.0
+     B trend pullback 5m | no filter                           441.0           464.0                  451.0
+     B trend pullback 5m | stops >= $4.00 (Raw A 3%)           240.0           244.0                  243.0
+     B trend pullback 5m | stops >= $6.67 (Standard 3%)         38.0            40.0                   39.0
+2023 A 1m sweep + 1H trend | no filter                         421.0           450.0                  432.0
+     A 1m sweep + 1H trend | stops >= $4.00 (Raw A 3%)          49.0            62.0                   53.0
+     A 1m sweep + 1H trend | stops >= $6.67 (Standard 3%)        7.0             7.0                    7.0
+     B trend pullback 5m | no filter                           441.0           463.0                  450.0
+     B trend pullback 5m | stops >= $4.00 (Raw A 3%)           196.0           199.0                  197.0
+     B trend pullback 5m | stops >= $6.67 (Standard 3%)         36.0            36.0                   36.0
+2024 A 1m sweep + 1H trend | no filter                         410.0           438.0                  420.0
+     A 1m sweep + 1H trend | stops >= $4.00 (Raw A 3%)         107.0           116.0                  112.0
+     A 1m sweep + 1H trend | stops >= $6.67 (Standard 3%)       17.0            19.0                   17.0
+     B trend pullback 5m | no filter                           446.0           461.0                  449.0
+     B trend pullback 5m | stops >= $4.00 (Raw A 3%)           320.0           323.0                  320.0
+     B trend pullback 5m | stops >= $6.67 (Standard 3%)        105.0           107.0                  105.0
+2025 A 1m sweep + 1H trend | no filter                         411.0           421.0                  413.0
+     A 1m sweep + 1H trend | stops >= $4.00 (Raw A 3%)         288.0           299.0                  291.0
+     A 1m sweep + 1H trend | stops >= $6.67 (Standard 3%)      115.0           122.0                  118.0
+     B trend pullback 5m | no filter                           420.0           429.0                  421.0
+     B trend pullback 5m | stops >= $4.00 (Raw A 3%)           403.0           408.0                  403.0
+     B trend pullback 5m | stops >= $6.67 (Standard 3%)        307.0           310.0                  308.0
+
+== Standard $0.20: net by year ==
+year                                                     2022    2023    2024    2025
+variant                                                                              
+A 1m sweep + 1H trend | no filter                    -1049.23 -983.47 -612.22 -149.99
+A 1m sweep + 1H trend | stops >= $4.00 (Raw A 3%)       73.26  -25.19 -122.09 -344.63
+A 1m sweep + 1H trend | stops >= $6.67 (Standard 3%)    33.12  -14.72  -40.34  -80.27
+B trend pullback 5m | no filter                       -702.07 -984.23 -349.23  328.02
+B trend pullback 5m | stops >= $4.00 (Raw A 3%)        145.63  -49.18  102.70  144.90
+B trend pullback 5m | stops >= $6.67 (Standard 3%)    -113.67   11.27  -37.27 -102.73
+
+== Raw A $0.05+$3.5/side: net by year ==
+year                                                    2022    2023    2024    2025
+variant                                                                             
+A 1m sweep + 1H trend | no filter                    -763.64 -472.02 -384.12   19.23
+A 1m sweep + 1H trend | stops >= $4.00 (Raw A 3%)      86.32   -2.81 -112.78 -282.09
+A 1m sweep + 1H trend | stops >= $6.67 (Standard 3%)   34.26  -14.14  -25.58  -32.59
+B trend pullback 5m | no filter                      -618.42 -752.10 -226.24  354.61
+B trend pullback 5m | stops >= $4.00 (Raw A 3%)       110.47  -23.80  142.93  192.00
+B trend pullback 5m | stops >= $6.67 (Standard 3%)   -115.88   11.74   -0.21 -143.90
+
+== zero cost: net by year ==
+year                                                    2022    2023    2024    2025
+variant                                                                             
+A 1m sweep + 1H trend | no filter                    -200.13  116.17  248.42  253.97
+A 1m sweep + 1H trend | stops >= $4.00 (Raw A 3%)      98.15  -25.30 -108.36 -255.99
+A 1m sweep + 1H trend | stops >= $6.67 (Standard 3%)   34.87  -13.86  -23.53  -47.14
+B trend pullback 5m | no filter                      -234.70 -340.49  -25.69  424.08
+B trend pullback 5m | stops >= $4.00 (Raw A 3%)       228.16  -21.82  194.41  253.92
+B trend pullback 5m | stops >= $6.67 (Standard 3%)    -93.44   15.37   10.41 -123.93
+
+results: /Users/patrick/Documents/lunch money/results/cost_filter/all.csv

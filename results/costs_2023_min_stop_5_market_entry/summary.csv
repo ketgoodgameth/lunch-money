@@ -1,0 +1,6 @@
+version,costs,trades,net,Q1,Q2,Q3,Q4,q_positive,win_rate,avg_R,tstat,max_dd,skipped_wide_stop
+"min stop $5, market entry",Standard $0.20,414,-285.32,-47.46,-157.24,-46.27,-34.35,0,46.9,-0.069,-1.42,-441.71,6
+"min stop $5, market entry",Raw A $0.05+$3.5/side,413,-164.0,-39.48,-111.65,-16.61,3.73,1,49.2,-0.04,-0.86,-312.51,6
+"min stop $5, market entry",Raw B $0.10+$3.5/side,412,-235.29,-61.85,-128.15,-32.33,-12.97,0,48.3,-0.057,-1.22,-380.86,6
+"min stop $5, market entry",Raw best $0.00+$3.5/side,414,-166.67,-29.5,-112.62,-33.05,8.5,1,49.3,-0.04,-0.88,-318.11,6
+"min stop $5, market entry",zero cost,414,-106.86,-14.21,-102.31,-17.2,26.86,1,49.3,-0.026,-0.55,-284.97,6

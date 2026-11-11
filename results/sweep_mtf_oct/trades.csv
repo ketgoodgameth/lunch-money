@@ -1,0 +1,2 @@
+position_id,side,lots,entry_time,entry_price,exit_time,exit_price,gross_pnl,commission,swap,net_pnl,reason,tag,mae,mfe,duration_s
+2,SELL,0.01,2025-10-09T06:41:01.077000+00:00,4029.59,2025-10-09T10:59:57.614000+00:00,4044.49,-14.9,0.0,0.0,-14.9,sl,short,-14.9,6.67,15536.537

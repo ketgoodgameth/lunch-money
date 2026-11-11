@@ -1,0 +1,23 @@
+20 backtests on 8 workers (2024)...
+  16/20 (131s)
+  20/20 (174s)
+
+== 2024: net P&L (rows: version, columns: account costs) ==
+costs                      Standard $0.20  Raw A $0.05+$3.5/side  Raw B $0.10+$3.5/side  Raw best $0.00+$3.5/side  zero cost
+version                                                                                                                     
+min stop $5, market entry         -432.06                -355.11                -394.77                    -318.3    -306.33
+
+== 2024: per-trade result in R ==
+costs                      Standard $0.20  Raw A $0.05+$3.5/side  Raw B $0.10+$3.5/side  Raw best $0.00+$3.5/side  zero cost
+version                                                                                                                     
+min stop $5, market entry          -0.103                 -0.086                 -0.095                    -0.077     -0.074
+
+== all ==
+                  version                    costs  trades     net     Q1     Q2     Q3      Q4  q_positive  win_rate  avg_R  tstat  max_dd  skipped_wide_stop
+min stop $5, market entry    Raw A $0.05+$3.5/side     415 -355.11 -53.08 -31.34  -5.74 -264.96           0      45.3 -0.086  -1.83 -395.61                  2
+min stop $5, market entry    Raw B $0.10+$3.5/side     416 -394.77 -58.42 -39.69  -6.90 -289.77           0      45.0 -0.095  -2.04 -430.73                  1
+min stop $5, market entry Raw best $0.00+$3.5/side     413 -318.30 -56.72 -30.02  -3.54 -228.03           0      46.2 -0.077  -1.65 -355.06                  2
+min stop $5, market entry           Standard $0.20     418 -432.06 -58.69 -20.73 -23.96 -328.68           0      44.3 -0.103  -2.16 -469.03                  1
+min stop $5, market entry                zero cost     413 -306.33 -65.00 -20.40 -21.29 -199.63           0      46.2 -0.074  -1.54 -341.83                  2
+
+finished in 174s; results in /Users/patrick/Library/Application Support/Claude/scratch-workspaces/7eb30bd3-d782-41cd-9a9f-75ac6917369e/fd9f57ee-ade3-4c85-9e30-8aa89247bf23/scratch-2026-11-10-e08f02/results/costs_2024_min_stop_5_market_entry

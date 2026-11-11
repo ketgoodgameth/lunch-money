@@ -1,0 +1,15 @@
+# Python
+.venv/
+__pycache__/
+*.egg-info/
+.pytest_cache/
+
+# Data and caches (large; regenerate or re-download)
+ticks/
+.cache/
+data/
+recordings/
+results/**/equity.csv
+
+# macOS
+.DS_Store

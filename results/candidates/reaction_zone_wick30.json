@@ -1,0 +1,36 @@
+{
+  "name": "Reaction zone (user's method, mechanical), wick >= 30%",
+  "status": "promising: passed two clean, locked tests (2020 +$123, 2021 +$140 at $0.20)",
+  "saved_at": "2026-11-11T14:46:21.450155+00:00",
+  "strategy_file": "strategies/reaction_zone.py",
+  "params": {
+    "__rules__": {
+      "fixed_lots": 0.01,
+      "max_daily_loss": 20.0,
+      "max_trades": 2,
+      "stop_after_wins": 1
+    },
+    "rsi_overbought": 0.0,
+    "rsi_oversold": 100.0,
+    "use_divergence": false,
+    "zones": "sweep+fvg",
+    "sessions": "07:00-10:00,12:30-16:00",
+    "flat_hour": 20,
+    "tp_usd": 10.0,
+    "sl_mode": "none",
+    "h1_macd_filter": false,
+    "exec_mode": "m5",
+    "min_wick": 0.3
+  },
+  "costs_assumed": "$0.20 spread, no commission",
+  "backtest_net_at_0.20": {
+    "2020": 123,
+    "2021": 140,
+    "2022": 218,
+    "2023": -74,
+    "2024": 135,
+    "2025": 299,
+    "2026": 309
+  },
+  "caveat": "the wick >= 30% setting was noticed by looking at 2023-2026; only 2021 is a clean confirmation"
+}

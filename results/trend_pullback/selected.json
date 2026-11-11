@@ -1,0 +1,12 @@
+{
+  "variant": "5min lb8 floor2xATR",
+  "params": {
+    "trail_start_r": 1.0,
+    "trail_dist_r": 0.5,
+    "buffer_atr": 0.2,
+    "max_stop": 10.0,
+    "tf": "5min",
+    "lookback": 8,
+    "min_stop_atr": 2.0
+  }
+}

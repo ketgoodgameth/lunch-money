@@ -1,0 +1,73 @@
+2022: 32 backtests on 8 workers
+  24/32 (71s)
+  32/32 (94s)
+  done in 95s
+2023: 32 backtests on 8 workers
+  24/32 (51s)
+  32/32 (66s)
+  done in 66s
+2024: 32 backtests on 8 workers
+  24/32 (85s)
+  32/32 (108s)
+  done in 108s
+2025: 32 backtests on 8 workers
+  24/32 (111s)
+  32/32 (132s)
+  done in 132s
+2026: 32 backtests on 8 workers
+  24/32 (104s)
+  32/32 (129s)
+  done in 130s
+
+== net, $0.20 ==
+year                              2022    2023    2024    2025    2026   total  years_positive
+variant                                                                                       
+stop at 0.4 of range            305.96  185.64 -159.19  251.02  104.28  687.71               4
+stop at 0.5 of range (PRIMARY)   98.86  122.92  131.70  411.12   72.42  837.02               5
+stop at 0.6 of range            133.50   86.44  120.35  197.34  145.63  683.26               5
+stop at 1 of range (original)   406.29   87.90  193.86  101.23 -121.70  667.58               4
+-- trades, $0.20
+year                            2022  2023  2024  2025  2026  total
+variant                                                            
+stop at 0.4 of range             144   134   149   134   104    665
+stop at 0.5 of range (PRIMARY)   144   134   148   132    95    653
+stop at 0.6 of range             144   132   148   127    80    631
+stop at 1 of range (original)    139   125   135    96    21    516
+
+== net, $0.20 + $0.10 slippage ==
+year                              2022   2023    2024    2025    2026   total  years_positive
+variant                                                                                      
+stop at 0.4 of range            120.95 -51.26 -146.75  199.89   61.43  184.26               3
+stop at 0.5 of range (PRIMARY)   25.75 -36.59   49.66  378.04   59.21  476.07               4
+stop at 0.6 of range             36.52  -3.78   52.08  123.29  162.55  370.66               4
+stop at 1 of range (original)   319.39  34.27  150.07   81.14 -126.14  458.73               4
+-- trades, $0.20 + $0.10 slippage
+year                            2022  2023  2024  2025  2026  total
+variant                                                            
+stop at 0.4 of range             144   134   149   134   104    665
+stop at 0.5 of range (PRIMARY)   144   134   148   132    95    653
+stop at 0.6 of range             144   132   148   127    80    631
+stop at 1 of range (original)    139   125   135    96    21    516
+
+== per trade (R), longs/shorts at $0.20 ==
+ year                        variant  avg_R  win_rate  tstat  max_dd  long_net  short_net
+ 2022           stop at 0.4 of range  0.106      53.5   1.22 -178.61     78.76     227.20
+ 2023           stop at 0.4 of range  0.069      51.5   0.81 -214.15     46.89     138.77
+ 2024           stop at 0.4 of range -0.053      49.7  -0.72 -310.65      1.44    -160.62
+ 2025           stop at 0.4 of range  0.094      55.2   1.15 -139.75    132.69     118.34
+ 2026           stop at 0.4 of range  0.050      51.0   0.55 -146.59    -25.23     129.51
+ 2022 stop at 0.5 of range (PRIMARY)  0.034      53.5   0.45 -188.66     10.05      88.80
+ 2023 stop at 0.5 of range (PRIMARY)  0.046      52.2   0.58 -209.78    113.14       9.78
+ 2024 stop at 0.5 of range (PRIMARY)  0.044      54.7   0.62 -167.03     88.90      42.79
+ 2025 stop at 0.5 of range (PRIMARY)  0.156      57.6   2.04 -112.92    366.06      45.08
+ 2026 stop at 0.5 of range (PRIMARY)  0.038      52.6   0.47 -136.15   -111.43     183.84
+ 2022           stop at 0.6 of range  0.046      53.5   0.59 -210.09    100.95      32.55
+ 2023           stop at 0.6 of range  0.033      53.0   0.46 -180.18    111.75     -25.30
+ 2024           stop at 0.6 of range  0.041      54.1   0.62 -140.40     56.78      63.58
+ 2025           stop at 0.6 of range  0.078      52.8   1.07 -131.07    316.91    -119.57
+ 2026           stop at 0.6 of range  0.091      55.0   1.04  -87.58     69.45      76.16
+ 2022  stop at 1 of range (original)  0.146      59.0   2.09  -82.12    182.66     223.64
+ 2023  stop at 1 of range (original)  0.035      50.4   0.58 -227.49     42.26      45.63
+ 2024  stop at 1 of range (original)  0.072      56.3   1.23  -96.91    205.92     -12.06
+ 2025  stop at 1 of range (original)  0.053      51.0   0.80 -143.62    109.75      -8.51
+ 2026  stop at 1 of range (original) -0.290      33.3  -1.74 -166.31    -17.95    -103.76

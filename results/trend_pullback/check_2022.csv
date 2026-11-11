@@ -1,0 +1,4 @@
+year,variant,costs,trades,net,Q1,Q2,Q3,Q4,q_positive,win_rate,avg_R,tstat,max_dd
+2022,5min lb8 floor2xATR,zero cost,441,-234.7,-35.96,-12.12,13.02,-199.65,1,47.2,-0.053,-1.1,-308.56
+2022,5min lb8 floor2xATR,Standard $0.20,464,-702.07,-234.19,-81.89,-61.85,-324.15,0,41.6,-0.151,-3.2,-727.99
+2022,5min lb8 floor2xATR,Raw A $0.05+$3.5/side,451,-618.42,-134.28,-97.2,-76.01,-310.93,0,44.8,-0.137,-2.86,-688.8

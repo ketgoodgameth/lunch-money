@@ -1,0 +1,45 @@
+caching xauusd-tick-2025-01-01-2025-12-31.csv...
+2025: 96 backtests on 8 workers
+  24/96 (123s)
+  48/96 (207s)
+  72/96 (301s)
+  96/96 (382s)
+  done in 382s
+
+== net P&L ==
+costs                       zero cost  Standard $0.20  Raw A $0.05+$3.5/side
+year variant                                                                
+2025 15min lb16 floor1xATR    -198.80         -386.20                -301.85
+     15min lb16 floor2xATR      -7.07          -27.07                 -15.94
+     15min lb8 floor1xATR     -354.68         -446.70                -440.23
+     15min lb8 floor2xATR      -82.70         -117.56                -111.00
+     5min lb16 floor1xATR     -113.76         -511.59                -299.39
+     5min lb16 floor2xATR      264.04          156.05                 178.47
+     5min lb8 floor1xATR       184.99         -123.62                 -36.28
+     5min lb8 floor2xATR       424.08          328.02                 354.61
+
+== per-trade result (R) ==
+costs                       zero cost  Standard $0.20  Raw A $0.05+$3.5/side
+year variant                                                                
+2025 15min lb16 floor1xATR     -0.054          -0.103                 -0.082
+     15min lb16 floor2xATR     -0.003          -0.011                 -0.007
+     15min lb8 floor1xATR      -0.088          -0.109                 -0.109
+     15min lb8 floor2xATR      -0.031          -0.044                 -0.041
+     5min lb16 floor1xATR      -0.026          -0.116                 -0.069
+     5min lb16 floor2xATR       0.063           0.037                  0.042
+     5min lb8 floor1xATR        0.044          -0.029                 -0.009
+     5min lb8 floor2xATR        0.101           0.076                  0.084
+
+== trades ==
+costs                       zero cost  Standard $0.20  Raw A $0.05+$3.5/side
+year variant                                                                
+2025 15min lb16 floor1xATR      368.0           374.0                  369.0
+     15min lb16 floor2xATR      236.0           236.0                  236.0
+     15min lb8 floor1xATR       403.0           408.0                  404.0
+     15min lb8 floor2xATR       268.0           268.0                  268.0
+     5min lb16 floor1xATR       432.0           442.0                  434.0
+     5min lb16 floor2xATR       419.0           425.0                  420.0
+     5min lb8 floor1xATR        420.0           431.0                  422.0
+     5min lb8 floor2xATR        420.0           429.0                  421.0
+
+selected by the pre-declared rule: 5min lb8 floor2xATR

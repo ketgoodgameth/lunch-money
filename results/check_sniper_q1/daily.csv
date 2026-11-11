@@ -1,0 +1,74 @@
+day,trades,pnl,ended_by
+2025-01-02,2,-19.69,max trades
+2025-01-03,2,-20.01,loss limit
+2025-01-05,1,-10.37,no further signal
+2025-01-06,2,-22.83,loss limit
+2025-01-07,1,112.34,win
+2025-01-08,2,-19.88,max trades
+2025-01-09,2,-20.32,loss limit
+2025-01-10,2,-19.87,max trades
+2025-01-13,2,-18.74,max trades
+2025-01-14,2,-18.51,max trades
+2025-01-15,2,-20.86,loss limit
+2025-01-16,2,83.6,win
+2025-01-17,2,69.51,win
+2025-01-19,1,-6.54,no further signal
+2025-01-20,2,-17.21,max trades
+2025-01-21,2,-18.87,max trades
+2025-01-22,2,-19.75,max trades
+2025-01-23,2,-18.0,max trades
+2025-01-24,2,-19.54,max trades
+2025-01-27,2,-21.56,loss limit
+2025-01-28,2,-19.9,max trades
+2025-01-29,2,-21.31,loss limit
+2025-01-30,2,-19.9,max trades
+2025-01-31,2,-18.98,max trades
+2025-02-02,1,-7.67,no further signal
+2025-02-03,2,-17.64,max trades
+2025-02-04,2,-20.65,loss limit
+2025-02-05,2,-15.64,max trades
+2025-02-06,2,-18.32,max trades
+2025-02-07,2,-18.87,max trades
+2025-02-09,1,-9.08,no further signal
+2025-02-10,2,-17.21,max trades
+2025-02-11,2,-18.78,max trades
+2025-02-12,2,-19.74,max trades
+2025-02-13,2,-19.39,max trades
+2025-02-14,2,-19.54,max trades
+2025-02-17,2,-16.73,max trades
+2025-02-18,2,-19.49,max trades
+2025-02-19,2,-18.49,max trades
+2025-02-20,2,-19.52,max trades
+2025-02-21,2,-17.45,max trades
+2025-02-23,1,-8.14,no further signal
+2025-02-24,2,-17.73,max trades
+2025-02-25,2,-17.91,max trades
+2025-02-26,2,-19.56,max trades
+2025-02-27,2,-19.92,max trades
+2025-02-28,2,-18.36,max trades
+2025-03-02,1,-6.96,no further signal
+2025-03-03,2,-14.91,max trades
+2025-03-04,2,-17.15,max trades
+2025-03-05,2,-15.87,max trades
+2025-03-06,2,-18.34,max trades
+2025-03-07,2,-18.91,max trades
+2025-03-09,1,-10.65,no further signal
+2025-03-10,2,90.79,win
+2025-03-11,2,-19.41,max trades
+2025-03-12,2,-21.07,loss limit
+2025-03-13,2,-19.9,max trades
+2025-03-14,2,-18.06,max trades
+2025-03-16,2,-18.68,max trades
+2025-03-17,2,-19.6,max trades
+2025-03-18,2,-18.55,max trades
+2025-03-19,2,-18.01,max trades
+2025-03-20,2,-19.25,max trades
+2025-03-21,1,79.63,win
+2025-03-23,1,99.14,win
+2025-03-24,2,-20.0,max trades
+2025-03-25,2,89.06,win
+2025-03-26,2,-19.01,max trades
+2025-03-27,2,-21.1,loss limit
+2025-03-28,2,-19.03,max trades
+2025-03-30,1,-11.06,no further signal
+2025-03-31,2,-17.4,max trades

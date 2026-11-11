@@ -1,0 +1,21 @@
+{
+  "name": "pullback 15m candles",
+  "file": "trend_pullback.py",
+  "params": {
+    "trail_start_r": 1.0,
+    "trail_dist_r": 0.5,
+    "__rules__": {
+      "risk_per_trade": 20.0,
+      "max_daily_loss": 20.0,
+      "max_trades": 1,
+      "stop_after_wins": 1
+    },
+    "buffer_atr": 0.2,
+    "max_stop": 20.0,
+    "entry_hours": "7-18",
+    "flat_hour": 20,
+    "tf": "15min",
+    "lookback": 8,
+    "min_stop_atr": 2.0
+  }
+}

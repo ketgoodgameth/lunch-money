@@ -1,0 +1,20 @@
+{
+  "name": "New York breakout, 60m range",
+  "file": "opening_range.py",
+  "params": {
+    "trail_start_r": 1.0,
+    "trail_dist_r": 0.5,
+    "__rules__": {
+      "risk_per_trade": 20.0,
+      "max_daily_loss": 20.0,
+      "max_trades": 1,
+      "stop_after_wins": 1
+    },
+    "exit": "trail",
+    "range_minutes": 60,
+    "max_stop": 20.0,
+    "entry_end_hour": 18,
+    "flat_hour": 20,
+    "range_start": "13:30"
+  }
+}

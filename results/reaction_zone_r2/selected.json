@@ -1,0 +1,22 @@
+{
+  "name": "6 = 2 + enter on 5m confirmation",
+  "file": "reaction_zone.py",
+  "params": {
+    "__rules__": {
+      "fixed_lots": 0.01,
+      "max_daily_loss": 20.0,
+      "max_trades": 2,
+      "stop_after_wins": 1
+    },
+    "rsi_overbought": 0.0,
+    "rsi_oversold": 100.0,
+    "use_divergence": false,
+    "zones": "sweep+fvg",
+    "sessions": "07:00-10:00,12:30-16:00",
+    "flat_hour": 20,
+    "tp_usd": 10.0,
+    "sl_mode": "none",
+    "h1_macd_filter": false,
+    "exec_mode": "m5"
+  }
+}

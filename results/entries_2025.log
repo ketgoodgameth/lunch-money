@@ -1,0 +1,25 @@
+liquidity_sweep_mtf.py: 16 backtests...
+  8/16 (60s)
+  16/16 (111s)
+liquidity_sweep_exits.py: 32 backtests...
+  8/32 (164s)
+  16/32 (253s)
+  24/32 (296s)
+  32/32 (320s)
+
+reference (v2 sweeps on 1m candles, trail 0.5R, same rules): zero spread -17.22, spread $0.17 -270.87
+                      entry       spread  trades  days_traded     net      Q1     Q2     Q3     Q4  q_positive  win_rate  avg_R  tstat  max_dd  skipped_wide_stop  vs_1m_reference
+      MTF spec (as written) spread $0.17       8            8  -23.36   12.71  -5.72 -20.95  -9.40           1      25.0 -0.292  -1.02  -36.07                  7           247.51
+MTF spec, no 1H MACD filter spread $0.17      41           38  -47.35    5.41   4.30 -47.67  -9.40           2      34.1 -0.115  -0.77  -72.96                 37           223.52
+     sweep 15m + trail 0.5R spread $0.17     137          113  -55.46  -72.87  40.90 -19.66  -3.83           1      48.9 -0.040  -0.56 -144.35                358           215.41
+      sweep 5m + trail 0.5R spread $0.17     372          254  -94.13  -27.30 -64.75 -36.71  34.63           1      46.8 -0.025  -0.54 -172.52                246           176.74
+            sweep 15m + 1:2 spread $0.17     142          110 -170.37  -97.06 -38.13 -46.13  10.94           1      28.9 -0.120  -1.28 -219.41                370           100.50
+             sweep 5m + 1:2 spread $0.17     404          254 -183.74 -172.10 -24.02  71.06 -58.68           1      31.4 -0.045  -0.77 -242.33                267            87.13
+      sweep 5m + trail 0.5R  zero spread     364          254  121.99   77.74 -25.25  26.49  43.01           3      49.5  0.034   0.69 -112.68                241           139.21
+      MTF spec (as written)  zero spread       8            8  -22.17   13.05  -5.55 -20.44  -9.23           1      25.0 -0.277  -0.98  -35.22                  7            -4.95
+MTF spec, no 1H MACD filter  zero spread      41           38  -25.08    7.32   4.46 -27.62  -9.23           2      36.6 -0.061  -0.41  -69.93                 37            -7.86
+     sweep 15m + trail 0.5R  zero spread     137          114  -39.98  -46.41  31.99 -19.54  -6.01           1      50.4 -0.029  -0.41 -121.01                357           -22.76
+             sweep 5m + 1:2  zero spread     402          254  -69.68  -95.12 -12.04  98.99 -61.51           1      32.1 -0.017  -0.29 -165.09                264           -52.46
+            sweep 15m + 1:2  zero spread     143          112  -90.61  -45.72  -3.51 -52.36  10.99           1      31.5 -0.063  -0.68 -138.27                368           -73.39
+
+finished in 321s; results in /Users/patrick/Library/Application Support/Claude/scratch-workspaces/7eb30bd3-d782-41cd-9a9f-75ac6917369e/fd9f57ee-ade3-4c85-9e30-8aa89247bf23/scratch-2026-11-10-e08f02/results/entries_2025

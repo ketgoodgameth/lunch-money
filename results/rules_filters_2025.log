@@ -1,0 +1,72 @@
+160 backtests on 8 workers...
+  20/160 done (201s)
+  40/160 done (376s)
+  60/160 done (554s)
+  80/160 done (735s)
+  100/160 done (920s)
+  120/160 done (1088s)
+  140/160 done (1259s)
+  160/160 done (1409s)
+
+== zero spread: net P&L 2025 (rows: daily rule, columns: entry filter) ==
+filter                               none  hours 07-20  1H trend  hours + trend
+rule                                                                           
+R1 stop after 1st win, max 2       -17.22       -54.12    253.97        -299.27
+R2 trade until -$20              -1068.38       -92.55   -856.94        -461.88
+R3 stop after 2 wins in a row     -192.91       -68.96   -413.26        -372.38
+R4 stop after 2 losses in a row   -526.25      -236.84   -502.83        -319.24
+R5 stop after 2 wins or 2 losses    28.77       -30.88   -241.65        -257.98
+
+== spread $0.17: net P&L 2025 (rows: daily rule, columns: entry filter) ==
+filter                               none  hours 07-20  1H trend  hours + trend
+rule                                                                           
+R1 stop after 1st win, max 2      -270.87      -272.37    -76.67        -502.77
+R2 trade until -$20              -2171.72     -1365.56  -1509.50       -1129.88
+R3 stop after 2 wins in a row     -716.49      -671.79   -946.62        -944.61
+R4 stop after 2 losses in a row  -1248.90     -1020.47  -1140.32        -943.85
+R5 stop after 2 wins or 2 losses  -435.56      -561.96   -753.49        -821.92
+
+== all configurations ==
+                            rule        filter  trades  trades_per_traded_day      net      Q1      Q2      Q3      Q4  q_positive  win_rate  avg_R  tstat   max_dd  worst_day  best_day       spread
+    R1 stop after 1st win, max 2      1H trend     421                   1.48   -76.67  -32.31 -194.61   36.22  114.02           2      49.6 -0.018  -0.40  -313.00      -20.0     32.58 spread $0.17
+    R1 stop after 1st win, max 2          none     455                   1.52  -270.87  -84.56 -216.20  -95.22  125.11           1      46.8 -0.060  -1.34  -540.16      -20.0     45.59 spread $0.17
+    R1 stop after 1st win, max 2   hours 07-20     390                   1.52  -272.37 -150.19  -76.07   80.31 -126.42           1      47.4 -0.070  -1.50  -312.08      -20.0     25.65 spread $0.17
+R5 stop after 2 wins or 2 losses          none     852                   2.85  -435.56 -321.49 -214.48 -116.49  216.90           1      47.8 -0.051  -1.64  -706.87      -20.0     58.22 spread $0.17
+    R1 stop after 1st win, max 2 hours + trend     400                   1.56  -502.77 -190.05 -116.32  -75.63 -120.77           0      44.5 -0.126  -2.70  -508.71      -20.0     26.46 spread $0.17
+R5 stop after 2 wins or 2 losses   hours 07-20     773                   3.01  -561.96 -303.66 -121.54   36.27 -173.03           1      47.6 -0.073  -2.38  -643.80      -20.0     38.54 spread $0.17
+   R3 stop after 2 wins in a row   hours 07-20    1010                   3.93  -671.79 -316.65 -127.91  -21.77 -205.46           0      46.6 -0.067  -2.56  -780.38      -20.0     38.54 spread $0.17
+   R3 stop after 2 wins in a row          none    1057                   3.54  -716.49 -417.04 -260.23 -206.44  167.22           1      46.5 -0.068  -2.52  -938.12      -20.0     58.22 spread $0.17
+R5 stop after 2 wins or 2 losses      1H trend     838                   2.95  -753.49 -258.89 -404.58  -94.28    4.26           1      45.7 -0.090  -3.02  -828.66      -20.0     37.78 spread $0.17
+R5 stop after 2 wins or 2 losses hours + trend     719                   2.80  -821.92 -314.34 -173.03  -96.18 -238.36           0      44.6 -0.114  -3.63  -850.11      -20.0     33.16 spread $0.17
+ R4 stop after 2 losses in a row hours + trend     962                   3.74  -943.85 -324.57 -254.45 -138.31 -226.53           0      45.2 -0.098  -3.51  -985.93      -20.0     62.53 spread $0.17
+   R3 stop after 2 wins in a row hours + trend     896                   3.49  -944.61 -376.45 -158.29 -114.65 -295.23           0      44.6 -0.105  -3.74  -972.80      -20.0     41.49 spread $0.17
+   R3 stop after 2 wins in a row      1H trend    1067                   3.76  -946.62 -345.38 -407.46 -203.13    9.35           1      45.5 -0.089  -3.41 -1054.77      -20.0     50.32 spread $0.17
+ R4 stop after 2 losses in a row   hours 07-20    1290                   5.02 -1020.47 -402.31 -311.00 -140.63 -166.53           0      46.6 -0.079  -3.47 -1127.53      -20.0     89.21 spread $0.17
+             R2 trade until -$20 hours + trend    1222                   4.75 -1129.88 -454.94 -253.05 -202.12 -219.77           0      45.3 -0.092  -3.75 -1163.56      -20.0     62.53 spread $0.17
+ R4 stop after 2 losses in a row      1H trend    1229                   4.33 -1140.32 -440.87 -489.99  -24.76 -184.69           0      45.5 -0.093  -3.82 -1146.26      -20.0     78.63 spread $0.17
+ R4 stop after 2 losses in a row          none    1422                   4.76 -1248.90 -569.38 -469.08 -300.63   90.20           1      45.7 -0.088  -4.23 -1385.95      -20.0     81.05 spread $0.17
+             R2 trade until -$20   hours 07-20    2151                   8.37 -1365.56 -408.14 -424.10 -442.44  -90.89           0      46.6 -0.063  -3.53 -1622.45      -20.0     89.21 spread $0.17
+             R2 trade until -$20      1H trend    1845                   6.50 -1509.50 -554.97 -602.94  -76.52 -275.07           0      45.8 -0.082  -4.12 -1515.44      -20.0     78.63 spread $0.17
+             R2 trade until -$20          none    2707                   9.05 -2171.72 -778.90 -935.79 -622.22  165.19           1      45.9 -0.080  -5.24 -2375.55      -20.0    104.52 spread $0.17
+    R1 stop after 1st win, max 2      1H trend     411                   1.45   253.97   82.43 -125.98  142.15  155.37           3      53.5  0.062   1.36  -170.29      -20.0     33.09  zero spread
+R5 stop after 2 wins or 2 losses          none     834                   2.79    28.77 -141.17 -152.43   14.82  307.55           2      50.2  0.003   0.11  -412.48      -20.0     59.72  zero spread
+    R1 stop after 1st win, max 2          none     442                   1.48   -17.22   34.81 -194.67    9.05  133.59           3      49.5 -0.004  -0.09  -393.39      -20.0     46.61  zero spread
+R5 stop after 2 wins or 2 losses   hours 07-20     758                   2.95   -30.88  -42.47  -44.29  213.48 -157.59           1      51.6 -0.004  -0.12  -311.18      -20.0     41.36  zero spread
+    R1 stop after 1st win, max 2   hours 07-20     378                   1.47   -54.12  -55.26   -7.18  113.05 -104.72           1      50.8 -0.014  -0.30  -188.84      -20.0     26.79  zero spread
+   R3 stop after 2 wins in a row   hours 07-20     970                   3.77   -68.96  -69.88  -96.32  278.72 -181.48           1      50.8 -0.007  -0.26  -353.97      -20.0     41.36  zero spread
+             R2 trade until -$20   hours 07-20    2340                   9.11   -92.55  -49.07 -129.18   40.72   44.98           2      50.3 -0.004  -0.22  -536.11      -20.0     98.06  zero spread
+   R3 stop after 2 wins in a row          none    1026                   3.43  -192.91 -205.10 -215.35  -54.08  281.62           1      48.6 -0.019  -0.67  -551.67      -20.0     59.72  zero spread
+ R4 stop after 2 losses in a row   hours 07-20    1390                   5.41  -236.84  -25.78 -179.13    9.30  -41.23           1      50.0 -0.017  -0.71  -538.71      -20.0     80.43  zero spread
+R5 stop after 2 wins or 2 losses      1H trend     843                   2.97  -241.65 -119.01 -249.80   17.46  109.70           2      49.2 -0.029  -0.95  -428.87      -20.0     50.45  zero spread
+R5 stop after 2 wins or 2 losses hours + trend     706                   2.75  -257.98 -170.63   50.46   51.55 -189.35           2      48.9 -0.037  -1.09  -303.38      -20.0     37.59  zero spread
+    R1 stop after 1st win, max 2 hours + trend     389                   1.51  -299.27  -68.67  -74.47  -28.21 -127.92           0      48.3 -0.077  -1.65  -364.94      -20.0     26.79  zero spread
+ R4 stop after 2 losses in a row hours + trend    1005                   3.91  -319.24  -88.37  -74.77   38.51 -194.60           1      49.0 -0.032  -1.10  -446.68      -20.0     71.11  zero spread
+   R3 stop after 2 wins in a row hours + trend     859                   3.34  -372.38 -203.27   63.67   -7.84 -224.94           1      48.8 -0.043  -1.46  -403.32      -20.0     37.59  zero spread
+   R3 stop after 2 wins in a row      1H trend    1048                   3.69  -413.26 -215.53 -258.77  -89.39  150.43           1      48.8 -0.039  -1.52  -600.54      -20.0     50.45  zero spread
+             R2 trade until -$20 hours + trend    1269                   4.94  -461.88 -143.50 -104.11  -17.43 -196.84           0      48.9 -0.036  -1.41  -579.91      -20.0     71.11  zero spread
+ R4 stop after 2 losses in a row      1H trend    1323                   4.66  -502.83 -227.65 -384.43  156.87  -47.62           1      49.0 -0.038  -1.55  -668.30      -20.0     89.78  zero spread
+ R4 stop after 2 losses in a row          none    1544                   5.16  -526.25 -304.67 -341.49  -75.43  195.34           1      49.0 -0.034  -1.51  -769.26      -20.0     96.80  zero spread
+             R2 trade until -$20      1H trend    1954                   6.88  -856.94 -292.55 -562.09  112.60 -114.90           1      48.7 -0.044  -2.19  -917.76      -20.0     89.78  zero spread
+             R2 trade until -$20          none    3068                  10.26 -1068.38 -395.38 -731.12 -250.99  309.11           1      48.7 -0.035  -2.18 -1448.39      -20.0    117.36  zero spread
+
+finished in 1409s; results in /Users/patrick/Library/Application Support/Claude/scratch-workspaces/7eb30bd3-d782-41cd-9a9f-75ac6917369e/fd9f57ee-ade3-4c85-9e30-8aa89247bf23/scratch-2026-11-10-e08f02/results/rules_filters_2025
