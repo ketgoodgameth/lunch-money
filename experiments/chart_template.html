@@ -81,11 +81,11 @@ svg text { fill: var(--muted); font-family: var(--font); font-size: 12px; }
 <main>
   <header>
     <h1>Backtest orders</h1>
-    <p class="sub">Reaction-zone entries, 0.01 lots, the $10 account is the stop, held until target or stop-out. Real Dukascopy ticks at a $0.20 spread.</p>
+    <p class="sub" id="desc"></p>
   </header>
 
   <div class="controls">
-    <div class="seg" id="rr" role="group" aria-label="Reward to risk"></div>
+    <div class="seg" id="rr" role="group" aria-label="Version"></div>
     <div class="seg" id="period" role="group" aria-label="Period"></div>
   </div>
 
@@ -98,20 +98,21 @@ svg text { fill: var(--muted); font-family: var(--font); font-size: 12px; }
     <div class="chart" id="chart"></div>
     <div class="legend">
       <span><i class="dot" style="background:var(--win)"></i>Profitable <b id="wins"></b></span>
-      <span><i class="dot" style="background:var(--loss)"></i>Stopped out <b id="losses"></b></span>
+      <span><i class="dot" style="background:var(--loss)"></i>Losing <b id="losses"></b></span>
     </div>
     <div class="detail" id="detail"></div>
   </section>
 
-  <p class="note">Each order risks $10 (account stop-out) for +$30 (1:3) or +$50 (1:5). Break-even win rate is 25% at 1:3 and 16.7% at 1:5. Overnight swap is not included. Backtest only; past results do not predict future ones.</p>
+  <p class="note"><span id="rule"></span> All versions: reaction-zone entries, 0.01 lots, real Dukascopy ticks at a $0.20 spread. Overnight swap is not included. Backtest only; past results do not predict future ones.</p>
 </main>
 
 <script>
 const DATA = /*DATA*/null;
+const INFO = /*INFO*/null;
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const NS = "http://www.w3.org/2000/svg";
-const state = { rr: "1:5", period: "All", sel: null };
-const years = [...new Set(Object.keys(DATA["1:5"]).map(k => k.slice(0, 4)))].sort();
+const state = { rr: Object.keys(DATA)[0], period: "All", sel: null };
+const years = [...new Set(Object.values(DATA).flatMap(d => Object.keys(d)).map(k => k.slice(0, 4)))].sort();
 
 function seg(el, values, key) {
   el.innerHTML = "";
@@ -159,7 +160,7 @@ function drawChart(bs) {
   const svg = document.createElementNS(NS, "svg");
   svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
   svg.setAttribute("role", "img");
-  svg.setAttribute("aria-label", `Orders per ${state.period === "All" ? "year" : "month"}: profitable and stopped out`);
+  svg.setAttribute("aria-label", `Orders per ${state.period === "All" ? "year" : "month"}: profitable and losing`);
   for (let v = 0; v <= max; v += step) {
     el("line", { x1: L, x2: W - R, y1: y(v), y2: y(v), stroke: "var(--line)", "stroke-width": 1 }, svg);
     el("text", { x: L - 8, y: y(v) + 4, "text-anchor": "end" }, svg).textContent = v;
@@ -192,6 +193,8 @@ function render() {
   seg(document.getElementById("rr"), Object.keys(DATA), "rr");
   seg(document.getElementById("period"), ["All", ...years], "period");
   const bs = buckets();
+  document.getElementById("desc").textContent = INFO[state.rr][0];
+  document.getElementById("rule").textContent = INFO[state.rr][1];
   const n = bs.reduce((a, b) => a + b.n, 0), w = bs.reduce((a, b) => a + b.w, 0), net = bs.reduce((a, b) => a + b.net, 0);
   document.getElementById("total").innerHTML = `${n.toLocaleString()}<small>${state.period === "All" ? "2019–2026" : state.period}</small>`;
   const pill = document.getElementById("net");

@@ -20,10 +20,13 @@ if __name__ == "__main__":
           f"gold {raw.bidPrice.min():,.0f}-{raw.bidPrice.max():,.0f} ({raw.bidPrice.iloc[-1] / raw.bidPrice.iloc[0] - 1:+.1%}), "
           f"weekdays without ticks: {[x.strftime('%m-%d') for x in wd[wd == 0].index]}")
     lock = json.loads((ROOT / "results" / f"locked_for_{year}.json").read_text())
-    extra = lock.get("broker", {})
-    costs = {"zero cost": {**COSTS["zero cost"], **extra}, "$0.20": {"fixed_spread": 0.20, "slippage": 0.0, **extra},
-             "$0.20 + $0.10 slippage": {"fixed_spread": 0.20, "slippage": 0.10, **extra}}
-    df = pd.concat([run_grid(tt["file"], {name: tt["params"]}, year, costs=costs) for name, tt in lock["tests"].items()])
+    def costs_for(test):
+        extra = {**lock.get("broker", {}), **{k: v for k, v in test.get("broker", {}).items()
+                                              if k not in ("fixed_spread", "slippage")}}   # per-test account size
+        return {"zero cost": {**COSTS["zero cost"], **extra}, "$0.20": {"fixed_spread": 0.20, "slippage": 0.0, **extra},
+                "$0.20 + $0.10 slippage": {"fixed_spread": 0.20, "slippage": 0.10, **extra}}
+    df = pd.concat([run_grid(tt["file"], {name: tt["params"]}, year, costs=costs_for(tt))
+                    for name, tt in lock["tests"].items()])
     df.to_csv(ROOT / "results" / f"test_{year}.csv", index=False)
     pd.set_option("display.width", 250)
     print(df[["variant", "costs", "trades", "net", "Q1", "Q2", "Q3", "Q4", "q_positive", "win_rate", "avg_R",

@@ -311,3 +311,23 @@ was amended before any 2018 data was downloaded to include the fixed-lot 1:3 / 1
   strong for all.
 - Caveat: 2021–2026 were partly used to pick the candidate, so this map shows robustness, not new evidence.
   The clean evidence remains the locked tests (2020 and 2021 pass, 2019 narrow fail) and the pending 2018 test.
+
+### High win rate: small target, no stop loss (`experiments/high_winrate.py`, 2019–2026, $0.20, $20/day account)
+
+Goal from the user: win rate around 60%+. Reaction-zone entries unchanged; full-year runs. Selection rule set
+before running: overall win rate ≥ 60%, then highest worst-year win rate, net positive in ≥ 6 of 8 years.
+
+| Version | Win rate | Worst year | Break-even | Net 2019–26 | Years + | Worst DD | Overnight |
+|---|---|---|---|---|---|---|---|
+| **TP $7.5, held (selected)** | **74.3%** | 63.6% (2019) | 72.2% | +$598 | 6/8 | −$428 | 32% |
+| TP $7.5, intraday | 63.7% | 50.6% (2019) | 59.8% | +$819 | 6/8 | −$161 | 0% |
+| TP $10, intraday (saved candidate) | 59.8% | 48.8% (2019) | 54.6% | +$1,157 | 6/8 | −$207 | 0% |
+| TP $10, held | 68.6% | 54.1% | 66.3% | +$684 | 5/8 | −$572 | 40% |
+| TP 0.15 × daily range, held | 81.6% | 59.8% (2026) | 80.3% | +$354 | 5/8 | — | — |
+
+- Win rate can be pushed up by holding losers (losses become the full −$20 account) or shrinking the target,
+  but the break-even win rate rises with it. The cushion (win rate − break-even) is what pays:
+  $10 intraday 5.2 points, $7.5 intraday 3.9, $7.5 held 2.1, 0.15 × range held 1.3.
+- Targets scaled to the daily range kept 2019 high but collapsed in 2026 (huge ranges → far targets).
+- Held versions keep ~1 in 3 trades overnight; swap is not modelled and would eat into the thin cushion.
+- 2019 loses in every version. All three main versions are added to the 2018 lock (still unseen).

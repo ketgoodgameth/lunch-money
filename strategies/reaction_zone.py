@@ -17,6 +17,8 @@
 Sizing (size_mode="atr"): keep a fixed dollar risk (account_risk, the $10 account) but choose the lot size so
 the stop-out distance is stop_atr_frac x the 14-day average daily range; with rr > 0 the target is rr times
 that distance (so +rr x account_risk in dollars). Never below 0.01 lots. size_mode="fixed" uses `lots`.
+With size_mode="fixed" and tp_atr > 0 the take profit is tp_atr x the 14-day average daily range instead of tp_usd,
+so the target stays equally reachable in quiet and busy years.
 
 A fair value gap: candle 1's high below candle 3's low (bullish, support) or candle 1's low above candle 3's
 high (bearish, resistance). It stays a zone until price trades through it or it is max_fvg_age candles old.
@@ -108,6 +110,7 @@ class ReactionZone(Strategy):
         "account_risk": 10.0,
         "stop_atr_frac": 0.25,
         "rr": 0.0,
+        "tp_atr": 0.0,
     }
 
     def on_start(self):
@@ -273,6 +276,10 @@ class ReactionZone(Strategy):
             lots, stop_dist = self.scaled_size()
             if p.rr > 0:
                 tp_dist = p.rr * stop_dist
+        elif p.tp_atr > 0:
+            if not self.datr.ready:
+                return
+            tp_dist = p.tp_atr * self.datr.value
         if s.side == SELL:
             tp = t.bid - tp_dist
             sl = s.wick + t.spread + p.sl_buffer if p.sl_mode == "wick" else None

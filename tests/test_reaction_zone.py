@@ -125,3 +125,12 @@ def test_volatility_scaled_size_keeps_dollar_risk_and_rr():
     run_to_entry(s)
     (p,) = s.positions
     assert p.lots == 0.03 and p.sl is None and p.tp == pytest.approx(3002.0 - 5 * 10.0 / 3)
+
+
+def test_take_profit_scales_with_daily_range():
+    s = make(tp_atr=0.25)
+    s.datr = Stub(ready=True, value=20.0)          # daily range $20 -> target $5
+    s.on_m15(Bar(DAY0 + 13 * H, 3002.0, 3008.0, 3001.0, 3003.0))
+    run_to_entry(s)
+    (p,) = s.positions
+    assert p.lots == 0.01 and p.tp == pytest.approx(3002.0 - 5.0)
