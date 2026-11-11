@@ -356,3 +356,15 @@ Line-by-line MQL5 port of the candidate for demo forward testing; compiles with 
 indicators (own EMA/MACD/Wilder ATR/SuperTrend/RSI, not MT5's built-ins, whose MACD signal is an SMA), daily
 $20 account stop, max 2 orders, stop after a win. Detects the broker clock (Exness UTC, MetaQuotes-Demo
 Athens time). Refuses real accounts by default. Setup: `mt5/README.md`.
+
+### MT5 Strategy Tester check, October 2025 (`experiments/mt5_parity.py`)
+
+EA in the MT5 tester on Exness (`XAUUSDm`, every tick based on real ticks, ideal execution), $10 intraday:
+14 trades, 13 take profits + 1 account stop-out, **+$110.13**.
+
+- vs Python on MetaQuotes-Demo ticks (+$94.06): 11 of 12 trades matched to the minute and side, same outcome.
+- vs the Dukascopy backtest (+$122.92): 12 of 15 matched; the rest are price-feed differences of a few cents
+  at the 15m rejection or 5m confirmation (e.g. 13 Oct entered 13:05 in Python vs 13:50 in MT5).
+- Take profits: MT5 fills exactly at the TP; the Python broker fills at the tick price when price jumps
+  through it, a little better. Over 2019–2026 that adds +$79 (+$0.15 per win) to the $10 intraday backtest.
+- Conclusion: the EA reproduces the backtest's logic; differences come from data, not code.
