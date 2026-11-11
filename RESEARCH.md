@@ -331,3 +331,28 @@ before running: overall win rate ≥ 60%, then highest worst-year win rate, net 
 - Targets scaled to the daily range kept 2019 high but collapsed in 2026 (huge ranges → far targets).
 - Held versions keep ~1 in 3 trades overnight; swap is not modelled and would eat into the thin cushion.
 - 2019 loses in every version. All three main versions are added to the 2018 lock (still unseen).
+
+### Slippage and delay (`experiments/execution_costs.py`, 2019–2026, $0.20 spread, full-year runs)
+
+Slippage hits market entries, 20:00 closes and stop-outs; take profits fill at their price. Net change vs the
+baseline (100 ms, no slippage):
+
+| Setup | $10 intraday | $7.5 intraday | $7.5 held |
+|---|---|---|---|
+| Baseline | +$1,157 | +$819 | +$598 |
+| VPS (5 ms), $0.05 slippage | −$79 | −$74 | −$35 |
+| VPS (5 ms), $0.10 slippage | −$192 | −$180 | −$102 |
+| Home PC (150 ms), $0.10 | −$200 | −$189 | −$135 |
+| Manual on phone (3 s), $0.10 | −$243 | −$226 | −$171 |
+| Bad fills, $0.30 slippage | −$596 (5/8 years +) | −$563 (4/8) | −$407 (4/8) |
+
+- Slippage matters far more than speed: VPS vs home PC at the same slippage is only ~$8–33 over 8 years.
+- Win rates barely move (≤ 3 points); the cost comes from every entry paying a bit more.
+- At realistic fills ($0.05–0.10) all three stay positive in 5–6 of 8 years; at $0.30 the edge mostly goes.
+
+### MT5 Expert Advisor (`mt5/ReactionZoneEA.mq5`)
+
+Line-by-line MQL5 port of the candidate for demo forward testing; compiles with 0 errors / 0 warnings. Same
+indicators (own EMA/MACD/Wilder ATR/SuperTrend/RSI, not MT5's built-ins, whose MACD signal is an SMA), daily
+$20 account stop, max 2 orders, stop after a win. Detects the broker clock (Exness UTC, MetaQuotes-Demo
+Athens time). Refuses real accounts by default. Setup: `mt5/README.md`.
