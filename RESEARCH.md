@@ -4,7 +4,7 @@
 
 | Candidate | Settings | Status |
 |---|---|---|
-| **Reaction zone, wick ≥ 30%** (your method, rule-based) | `results/candidates/reaction_zone_wick30.json` | **Most promising.** Clean, locked tests: 2020 +$123 PASS, 2021 +$140 PASS, 2019 −$23 narrow FAIL (+$12 before costs). 2019–2026: 6 of 8 years positive, about +$1,130. Settings map: all 48 neighbouring settings positive over 2021–2026. Volatility-scaled sizing rejected. 2018 test locked, waiting for data. |
+| **Reaction zone, wick ≥ 30%** (your method, rule-based) | `results/candidates/reaction_zone_wick30.json` | **Most promising.** Clean, locked tests: 2020 +$123 PASS, 2021 +$140 PASS, 2019 −$23 narrow FAIL (+$12 before costs). 2019–2026: 6 of 8 years positive, about +$1,130 (+$1,074 in full-year runs with MT5-style exact take-profit fills). Settings map: all 48 neighbouring settings positive over 2021–2026. Volatility-scaled sizing rejected. 2018 test locked, waiting for data. |
 | New York opening-range breakout, half-range stop | `results/candidates/ny_breakout_half_stop.json` | Weakened. +$837 over 2022–2026 but **failed the clean 2021 test (−$361)**. |
 
 All tests use real Dukascopy ticks (2022–2025), the simulated broker in `xautest/`, and the same rules:
@@ -13,6 +13,10 @@ with negative balance protection, unlimited leverage, 100 ms latency. R = the $1
 
 Costs tested: zero (to see the edge before costs), Exness Standard ($0.20 spread), and an assumed
 Raw account ($0.05 spread + $3.50 per lot per side; Exness quotes "from 0.0 pips" so the real raw spread is unknown).
+
+Take-profit fills: sections before "High win rate" were run when take profits filled at the crossing tick
+(slightly better than MT5 when price jumps through the target, about +$0.15 per take profit). From the
+high-win-rate section on, take profits fill exactly at the TP price, like MT5.
 
 ## Data
 
@@ -319,15 +323,15 @@ before running: overall win rate ≥ 60%, then highest worst-year win rate, net 
 
 | Version | Win rate | Worst year | Break-even | Net 2019–26 | Years + | Worst DD | Overnight |
 |---|---|---|---|---|---|---|---|
-| **TP $7.5, held (selected)** | **74.3%** | 63.6% (2019) | 72.2% | +$598 | 6/8 | −$428 | 32% |
-| TP $7.5, intraday | 63.7% | 50.6% (2019) | 59.8% | +$819 | 6/8 | −$161 | 0% |
-| TP $10, intraday (saved candidate) | 59.8% | 48.8% (2019) | 54.6% | +$1,157 | 6/8 | −$207 | 0% |
-| TP $10, held | 68.6% | 54.1% | 66.3% | +$684 | 5/8 | −$572 | 40% |
-| TP 0.15 × daily range, held | 81.6% | 59.8% (2026) | 80.3% | +$354 | 5/8 | — | — |
+| **TP $7.5, held (selected)** | **74.3%** | 63.6% (2019) | 72.7% | +$456 | 6/8 | −$463 | 32% |
+| TP $7.5, intraday | 63.7% | 50.6% (2019) | 60.2% | +$721 | 6/8 | −$168 | 0% |
+| TP $10, intraday (saved candidate) | 59.8% | 48.8% (2019) | 55.0% | +$1,074 | 6/8 | −$211 | 0% |
+| TP $10, held | 68.6% | 54.1% | 66.7% | +$562 | 5/8 | −$650 | 40% |
+| TP 0.15 × daily range, held | 81.6% | 59.8% (2026) | 80.9% | +$207 | 5/8 | −$348 | — |
 
 - Win rate can be pushed up by holding losers (losses become the full −$20 account) or shrinking the target,
   but the break-even win rate rises with it. The cushion (win rate − break-even) is what pays:
-  $10 intraday 5.2 points, $7.5 intraday 3.9, $7.5 held 2.1, 0.15 × range held 1.3.
+  $10 intraday 4.8 points, $7.5 intraday 3.5, $7.5 held 1.6, 0.15 × range held 0.7.
 - Targets scaled to the daily range kept 2019 high but collapsed in 2026 (huge ranges → far targets).
 - Held versions keep ~1 in 3 trades overnight; swap is not modelled and would eat into the thin cushion.
 - 2019 loses in every version. All three main versions are added to the 2018 lock (still unseen).
@@ -339,16 +343,17 @@ baseline (100 ms, no slippage):
 
 | Setup | $10 intraday | $7.5 intraday | $7.5 held |
 |---|---|---|---|
-| Baseline | +$1,157 | +$819 | +$598 |
-| VPS (5 ms), $0.05 slippage | −$79 | −$74 | −$35 |
-| VPS (5 ms), $0.10 slippage | −$192 | −$180 | −$102 |
-| Home PC (150 ms), $0.10 | −$200 | −$189 | −$135 |
-| Manual on phone (3 s), $0.10 | −$243 | −$226 | −$171 |
-| Bad fills, $0.30 slippage | −$596 (5/8 years +) | −$563 (4/8) | −$407 (4/8) |
+| Baseline | +$1,074 | +$721 | +$456 |
+| VPS (5 ms), $0.05 slippage | −$79 | −$75 | −$36 |
+| VPS (5 ms), $0.10 slippage | −$192 | −$180 | −$101 |
+| Home PC (150 ms), $0.10 | −$199 | −$188 | −$134 |
+| Manual on phone (3 s), $0.10 | −$242 | −$226 | −$171 |
+| Bad fills, $0.30 slippage | −$596 (5/8 years +) | −$563 (3/8) | −$406 (4/8) |
 
 - Slippage matters far more than speed: VPS vs home PC at the same slippage is only ~$8–33 over 8 years.
 - Win rates barely move (≤ 3 points); the cost comes from every entry paying a bit more.
 - At realistic fills ($0.05–0.10) all three stay positive in 5–6 of 8 years; at $0.30 the edge mostly goes.
+  With a VPS and $0.10 slippage: $10 intraday +$882, $7.5 intraday +$541, $7.5 held +$355.
 
 ### MT5 Expert Advisor (`mt5/ReactionZoneEA.mq5`)
 
@@ -365,6 +370,9 @@ EA in the MT5 tester on Exness (`XAUUSDm`, every tick based on real ticks, ideal
 - vs Python on MetaQuotes-Demo ticks (+$94.06): 11 of 12 trades matched to the minute and side, same outcome.
 - vs the Dukascopy backtest (+$122.92): 12 of 15 matched; the rest are price-feed differences of a few cents
   at the 15m rejection or 5m confirmation (e.g. 13 Oct entered 13:05 in Python vs 13:50 in MT5).
-- Take profits: MT5 fills exactly at the TP; the Python broker fills at the tick price when price jumps
-  through it, a little better. Over 2019–2026 that adds +$79 (+$0.15 per win) to the $10 intraday backtest.
+- Take profits: MT5 fills exactly at the TP; the Python broker used to fill at the tick price when price
+  jumped through it, a little better. That added about +$80 (+$0.15 per win) to the $10 intraday backtest.
+  Fixed: the broker now fills take profits exactly at the TP (`tp_fill="exact"`, the default), and the
+  high-win-rate, slippage and 1:3 / 1:5 export figures above were re-run with it. Same trades, lower net:
+  $10 intraday −$83, $7.5 intraday −$98, $7.5 held −$142, 1:3 held −$45, 1:5 held −$26 over 2019–2026.
 - Conclusion: the EA reproduces the backtest's logic; differences come from data, not code.

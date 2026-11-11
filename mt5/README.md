@@ -8,9 +8,9 @@ It refuses to run on a real account unless `InpAllowReal` is switched on.
 
 | Version | `InpTakeProfitUSD` | `InpFlatHourUTC` | Backtest 2019–2026 ($0.20 spread) |
 |---|---|---|---|
-| $10 intraday | 10 | 20 | 60% win rate, +$1,157 |
-| $7.5 intraday | 7.5 | 20 | 64% win rate, +$819 |
-| $7.5 held | 7.5 | 24 | 74% win rate, +$598 |
+| $10 intraday | 10 | 20 | 60% win rate, +$1,074 |
+| $7.5 intraday | 7.5 | 20 | 64% win rate, +$721 |
+| $7.5 held | 7.5 | 24 | 74% win rate, +$456 |
 
 Everything else stays at the defaults: 0.01 lots, $20 daily account, max 2 orders a day, stop after a win.
 

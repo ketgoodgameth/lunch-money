@@ -7,7 +7,8 @@ Fill rules (one tick = one real bid/ask quote, so there is no intrabar guessing)
   * Buy stop triggers when ask >= stop and fills at ask + slippage (gaps fill worse, as in reality).
     Sell stop triggers when bid <= stop and fills at bid - slippage.
   * Long positions close on the bid, shorts on the ask. A stop loss behaves like a stop order
-    (slippage, gap-through), a take profit like a limit order.
+    (slippage, gap-through). A take profit fills exactly at its price, as in MT5 (tp_fill="exact");
+    tp_fill="tick" instead fills at the tick that crossed it, which is better when price jumps through.
   * Latency: an order or close request sent at time t is acted on at the first tick with
     ts >= t + latency_ms. With latency 0 a market order fills on the tick the strategy saw.
   * Commission is charged per lot per side. Swap is applied at the 17:00 New York rollover,
@@ -45,6 +46,7 @@ class BrokerConfig:
     lot_step: float = 0.01
     max_lot: float = 100.0
     equity_sample_ms: int = 60_000
+    tp_fill: str = "exact"              # "exact": at the TP price (MT5); "tick": at the crossing tick
     # Daily account (e.g. a $20-a-day Exness account with negative balance protection): each day the
     # account holds `daily_account` USD at risk. Equity reaching 0 stops out every position, any loss
     # beyond that is written off, and no new orders are accepted until the next day. Profits are
@@ -284,7 +286,7 @@ class SimBroker:
                     self._close_position(p, bid - slip, tick.ts, "sl")
                     continue
                 if p.tp is not None and bid >= p.tp:
-                    self._close_position(p, bid, tick.ts, "tp")
+                    self._close_position(p, p.tp if self.cfg.tp_fill == "exact" else bid, tick.ts, "tp")
                     continue
             else:
                 move = p.entry_price - ask
@@ -292,7 +294,7 @@ class SimBroker:
                     self._close_position(p, ask + slip, tick.ts, "sl")
                     continue
                 if p.tp is not None and ask <= p.tp:
-                    self._close_position(p, ask, tick.ts, "tp")
+                    self._close_position(p, p.tp if self.cfg.tp_fill == "exact" else ask, tick.ts, "tp")
                     continue
             if move < exc[0]:
                 exc[0] = move

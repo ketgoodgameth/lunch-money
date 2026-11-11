@@ -1,0 +1,19 @@
+          version                      scenario  trades  win_rate  breakeven    net  years_positive  worst_year_wr  vs_baseline
+ TP $10, intraday baseline: 100 ms, no slippage    1246      59.8       54.6 1156.8               6           48.8          0.0
+ TP $10, intraday           VPS, $0.05 slippage    1246      59.6       54.8 1077.9               6           48.2        -78.9
+ TP $10, intraday           VPS, $0.10 slippage    1246      59.0       54.7  964.8               6           47.1       -192.1
+ TP $10, intraday       home PC, $0.10 slippage    1246      59.1       54.8  957.1               6           47.1       -199.7
+ TP $10, intraday  manual on phone (3 s), $0.10    1246      58.7       54.6  914.1               6           47.1       -242.7
+ TP $10, intraday     bad fills, $0.30 slippage    1246      57.1       54.6  561.3               5           44.7       -595.5
+    TP $7.5, held baseline: 100 ms, no slippage    1039      74.3       72.2  597.7               6           63.6          0.0
+    TP $7.5, held           VPS, $0.05 slippage    1039      74.3       72.3  562.4               6           63.6        -35.3
+    TP $7.5, held           VPS, $0.10 slippage    1039      74.2       72.5  495.8               6           63.6       -101.9
+    TP $7.5, held       home PC, $0.10 slippage    1039      74.1       72.5  462.7               6           63.6       -135.0
+    TP $7.5, held  manual on phone (3 s), $0.10    1040      74.0       72.5  426.8               6           63.6       -170.9
+    TP $7.5, held     bad fills, $0.30 slippage    1041      73.7       73.0  191.1               4           64.0       -406.6
+TP $7.5, intraday baseline: 100 ms, no slippage    1246      63.7       59.8  818.8               6           50.6          0.0
+TP $7.5, intraday           VPS, $0.05 slippage    1246      63.6       60.0  744.4               6           50.0        -74.4
+TP $7.5, intraday           VPS, $0.10 slippage    1246      63.0       59.9  638.4               5           48.8       -180.4
+TP $7.5, intraday       home PC, $0.10 slippage    1246      63.1       60.0  630.2               5           48.8       -188.6
+TP $7.5, intraday  manual on phone (3 s), $0.10    1246      62.7       59.8  592.6               5           48.8       -226.3
+TP $7.5, intraday     bad fills, $0.30 slippage    1246      61.2       60.0  255.6               4           46.5       -563.2

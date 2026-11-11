@@ -59,7 +59,16 @@ def test_short_take_profit_triggers_on_ask():
     assert b.positions
     b.on_tick(tk(2, 2647.7, 2647.95))
     (t,) = b.trades
-    assert t.reason == "tp" and t.exit_price == 2647.95
+    assert t.reason == "tp" and t.exit_price == 2648.0      # exactly at the TP, as MT5 fills it
+
+
+def test_take_profit_tick_fill_option_keeps_gap_improvement():
+    b = broker(tp_fill="tick")
+    b.on_tick(tk(0, 2650.0, 2650.2))
+    b.submit(SELL, 0.1, tp=2648.0)
+    b.on_tick(tk(1, 2647.7, 2647.95))
+    (t,) = b.trades
+    assert t.exit_price == 2647.95
 
 
 def test_latency_delays_fill_to_first_tick_after_delay():

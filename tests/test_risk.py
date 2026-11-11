@@ -24,7 +24,7 @@ def run(prices, rules=None, **params):
     s = AlwaysSell(**params)
     s.risk = rules or DailyRiskRules(risk_per_trade=10, max_daily_loss=20, max_trades=2, stop_after_win=True)
     ticks = [Tick(ts, p, p) for ts, p in prices]   # zero spread keeps the arithmetic obvious
-    b = SimBroker(BrokerConfig(commission_per_lot=0, leverage=float("inf")))
+    b = SimBroker(BrokerConfig(commission_per_lot=0, leverage=float("inf"), tp_fill="tick"))  # rule arithmetic uses gap fills
     res = Engine(s, b, ticks, close_on_end=True).run()
     return res, s.risk
 
@@ -126,7 +126,7 @@ def test_fixed_lots_without_stop():
                 self.sell(5.0, tp=t.bid - 1.0)
     s = NoStopSell()
     s.risk = DailyRiskRules(10, 20, 2, True, fixed_lots=0.01)
-    b = SimBroker(BrokerConfig(commission_per_lot=0, leverage=float("inf")))
+    b = SimBroker(BrokerConfig(commission_per_lot=0, leverage=float("inf"), tp_fill="tick"))  # rule arithmetic uses gap fills
     res = Engine(s, b, [Tick(D1, 3000.0, 3000.0), Tick(D1 + S, 2998.9, 2998.9)]).run()
     (t,) = res.trades
     assert t.lots == 0.01 and t.reason == "tp"
