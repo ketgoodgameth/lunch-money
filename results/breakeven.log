@@ -1,0 +1,37 @@
+/Users/patrick/Documents/lunch money/experiments/breakeven.py:72: Pandas4Warning: Starting with pandas version 4.0 all arguments of sum will be keyword-only.
+  "net_2019_24": net[list(DISCOVERY)].sum(1), "net_2025_26": net[[2025, 2026]].sum(1), "net": net.sum(1)})
+/Users/patrick/Documents/lunch money/experiments/breakeven.py:75: Pandas4Warning: Starting with pandas version 4.0 all arguments of sum will be keyword-only.
+  tot["beats_base_2019_24"] = (net[list(DISCOVERY)].gt(base[list(DISCOVERY)])).sum(1)
+net $ by year
+ year                          2019  2020   2021   2022  2023   2024   2025   2026
+variant                                                                          
+BE at +$3, stop at entry      22.0 -12.0   57.0  122.0 -52.0   19.0  170.0  -39.0
+BE at +$3, stop at entry +$1 -43.0 -21.0   18.0   34.0  12.0   34.0  147.0   36.0
+BE at +$5, stop at entry      -5.0 -32.0   83.0  144.0 -31.0  -11.0  300.0    6.0
+BE at +$5, stop at entry +$1 -42.0 -49.0   71.0  147.0 -19.0  -34.0  187.0   76.0
+BE at +$7, stop at entry     -37.0   2.0  166.0  172.0 -52.0   56.0  366.0  198.0
+BE at +$7, stop at entry +$1 -29.0 -13.0  165.0  156.0 -64.0   55.0  300.0  195.0
+baseline                     -64.0  84.0  132.0  199.0 -67.0  133.0  366.0  291.0 
+
+win rate % by year
+ year                          2019  2020  2021  2022  2023  2024  2025  2026
+variant                                                                     
+BE at +$3, stop at entry      38.0  32.0  32.0  28.0  22.0  25.0  30.0  23.0
+BE at +$3, stop at entry +$1  61.0  76.0  73.0  80.0  75.0  84.0  89.0  89.0
+BE at +$5, stop at entry      44.0  45.0  40.0  44.0  37.0  40.0  46.0  36.0
+BE at +$5, stop at entry +$1  56.0  68.0  65.0  71.0  65.0  72.0  80.0  84.0
+BE at +$7, stop at entry      46.0  52.0  51.0  51.0  44.0  52.0  60.0  58.0
+BE at +$7, stop at entry +$1  51.0  64.0  62.0  65.0  58.0  67.0  77.0  78.0
+baseline                      49.0  61.0  55.0  61.0  51.0  62.0  71.0  74.0 
+
+                              trades  win_rate  avg_win  avg_loss  stopouts  net_2019_24  net_2025_26     net  breakeven_wr  beats_base_2019_24
+variant                                                                                                                                        
+baseline                        1246      59.8     8.07     -9.86       145        417.0        657.0  1074.0          55.0                   0
+BE at +$7, stop at entry        1284      51.5     8.18     -7.28       131        307.0        564.0   871.0          47.1                   3
+BE at +$7, stop at entry +$1    1246      64.5     6.39     -9.90       127        270.0        495.0   765.0          60.8                   3
+BE at +$3, stop at entry        1418      28.7     8.48     -3.13        88        156.0        131.0   287.0          27.0                   2
+BE at +$5, stop at entry        1341      41.6     8.25     -5.30       120        148.0        306.0   454.0          39.1                   2
+BE at +$5, stop at entry +$1    1246      69.4     4.81    -10.03       112         74.0        263.0   337.0          67.6                   2
+BE at +$3, stop at entry +$1    1246      77.8     3.07    -10.00        77         34.0        183.0   217.0          76.5                   2 
+
+selection: none passes (no version beats the baseline in 4 of 6 discovery years)

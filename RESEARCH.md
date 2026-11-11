@@ -376,3 +376,34 @@ EA in the MT5 tester on Exness (`XAUUSDm`, every tick based on real ticks, ideal
   high-win-rate, slippage and 1:3 / 1:5 export figures above were re-run with it. Same trades, lower net:
   $10 intraday −$83, $7.5 intraday −$98, $7.5 held −$142, 1:3 held −$45, 1:5 held −$26 over 2019–2026.
 - Conclusion: the EA reproduces the backtest's logic; differences come from data, not code.
+
+### MT5 Strategy Tester, 2026 (Jan 1 – Nov 10), and where the losses come from
+
+EA on Exness `XAUUSDm`, $10 intraday: 121 trades, 70% won, **+$95.59** (Python on Dukascopy, Jan–Oct: 117
+trades, +$291). Exness only has real ticks from 30 Oct 2026; before that MT5 generated ticks from 1-minute bars
+(the Oct 2025 check was also on generated ticks).
+
+- The 97 trades both took are identical: same outcome every time, +$216 in MT5 vs +$212 in Python.
+- The whole gap is in trades only one side took (MT5 only: 24 trades, −$120; Python only: 20 trades, +$80), on 15
+  shared days where a few cents of price difference picked a different rejection candle. That is feed noise,
+  not a code difference: expect roughly ±$100 a year between brokers from this alone.
+- September–October 2026 are weak in both (matched trades −$66). 35 of the 39 MT5 losses were full −$20
+  stop-outs; the median one took under an hour.
+- Why 2026 has so many stop-outs: the daily range is now about $94 (2019: $11), so −$20 is only 0.2 of a day's
+  range. Stop-outs went from 3.5% of trades (2019) to 23% (2026); the $10 target got easier at the same time
+  (win rate 49% → 74%), which is why the year still makes money.
+
+Tried to fix it (`experiments/loss_analysis.py`, `experiments/breakeven.py`), rules fixed before running:
+
+- **Entry filters**: every trade tagged with 18 entry conditions (time of day, New York clock, wick/body,
+  RSI, distance to level and wick in 5m ATRs, 1H trend strength, day's move and range, waiting time, weekday).
+  Leave-one-year-out: dropping the worst fifth of trades by any one condition, chosen on the other 7 years,
+  lost money on the held-out year for 16 of 18 conditions. The two that "helped" (+$144, +$66) were not
+  monotone (the bad bucket sat in the middle) and rested on one year. **No filter adopted.**
+- **Fixed stop losses** ($6–15, estimated from each trade's worst drawdown): all worse than no stop
+  (+$227 to +$680 vs +$1,074).
+- **Break-even stop** (once +$3/5/7, stop to entry or entry +$1): all worse: +$217 to +$871 vs +$1,074.
+  Winners usually come back to the entry price before reaching $10, so the stop cuts winners more than it saves
+  losers. None beat the baseline in 4 of 6 discovery years. **Rejected.**
+- Conclusion: TP $10 intraday, no stop, stays as it is. Its exits are at a local best (also vs held, tighter
+  targets and range-scaled targets earlier), and the entry conditions don't predict losers out of sample.

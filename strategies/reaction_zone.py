@@ -11,6 +11,7 @@
                    (exec_mode="m5": enter straight away on the 5m confirmation instead, if price is below the zone.)
   exit             take profit tp_usd per ounce; stop loss none (sl_mode="none": the $20/day account stop-out is
                    the only limit) or just beyond the rejection wick (sl_mode="wick").
+  break-even       be_trigger > 0: once a trade is that many $/oz in profit, a stop goes to entry + be_offset.
   when             entries only inside `sessions` (UTC windows, e.g. "12:30-16:00" for the New York open);
                    anything open is closed at flat_hour UTC.
 
@@ -111,6 +112,8 @@ class ReactionZone(Strategy):
         "stop_atr_frac": 0.25,
         "rr": 0.0,
         "tp_atr": 0.0,
+        "be_trigger": 0.0,
+        "be_offset": 0.0,
     }
 
     def on_start(self):
@@ -124,6 +127,7 @@ class ReactionZone(Strategy):
         self.m5_st, self.m5_macd, self.m1_macd = SuperTrend(10, 3.0), MACD(), MACD()
         self.windows = parse_sessions(p.sessions)
         self.setup: Setup | None = None
+        self._be_done: set[int] = set()
         self.stats = {"h1_bars": 0, "rejections": 0, "via_sweep": 0, "via_fvg": 0, "confirmed": 0,
                       "executed": 0, "expired": 0, "invalidated": 0, "outside_session": 0}
 
@@ -151,9 +155,22 @@ class ReactionZone(Strategy):
                 self.setup = None; self.stats["expired"] += 1
             elif (s.side == SELL and t.bid > s.wick) or (s.side == BUY and t.bid < s.wick):
                 self.setup = None; self.stats["invalidated"] += 1
+        if self.p.be_trigger > 0:
+            self._break_even(t)
         if (self.positions or self.orders) and (t.ts % 86_400_000) >= self.p.flat_hour * 3_600_000:
             self.cancel_all()
             self.close_all("eod")
+
+    def _break_even(self, t):
+        """Once a trade is be_trigger $/oz in profit, put a stop at entry +/- be_offset (it never moves again)."""
+        p = self.p
+        for pos in self.positions:
+            if pos.id in self._be_done:
+                continue
+            gain = (t.bid - pos.entry_price) if pos.side == BUY else (pos.entry_price - t.ask)
+            if gain >= p.be_trigger:
+                self._be_done.add(pos.id)
+                self.modify(pos, sl=pos.entry_price + (p.be_offset if pos.side == BUY else -p.be_offset))
 
     def bias(self) -> int:
         if not self.h1_st.ready:

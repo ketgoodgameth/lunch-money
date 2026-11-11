@@ -134,3 +134,17 @@ def test_take_profit_scales_with_daily_range():
     run_to_entry(s)
     (p,) = s.positions
     assert p.lots == 0.01 and p.tp == pytest.approx(3002.0 - 5.0)
+
+
+def test_break_even_stop_moves_once_trade_is_in_profit():
+    s = make(be_trigger=5.0, be_offset=1.0)
+    s.on_m15(Bar(DAY0 + 13 * H, 3002.0, 3008.0, 3001.0, 3003.0))
+    run_to_entry(s)
+    (p,) = s.positions
+    assert p.sl is None
+    s._break_even(Tick(DAY0 + 14 * H, 2998.0, 2998.2))       # +$3.8: not yet
+    assert p.sl is None
+    s._break_even(Tick(DAY0 + 14 * H + M, 2996.8, 2997.0))   # +$5.0 on the ask: stop to entry - $1
+    assert p.sl == pytest.approx(p.entry_price - 1.0)
+    s._break_even(Tick(DAY0 + 14 * H + 2 * M, 2990.0, 2990.2))
+    assert p.sl == pytest.approx(p.entry_price - 1.0)         # never trails further
