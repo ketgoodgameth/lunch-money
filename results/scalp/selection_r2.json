@@ -1,0 +1,11 @@
+{
+  "pick": "r2 fade 15min quiet k2 tp2 sl3",
+  "passing": [
+    "r2 fade 15min quiet k2 tp2 sl3",
+    "r2 fade 15min quiet k2 tp1 sl3"
+  ],
+  "best_per_mode": {
+    "r2 fade 5min": "r2 fade 5min asia k2 tp1 sl3",
+    "r2 fade 15min": "r2 fade 15min asia k2 tp2 sl3"
+  }
+}

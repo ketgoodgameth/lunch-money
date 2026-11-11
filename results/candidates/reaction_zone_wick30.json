@@ -33,5 +33,6 @@
     "2025": 299,
     "2026": 309
   },
-  "caveat": "the wick >= 30% setting was noticed by looking at 2023-2026; only 2021 is a clean confirmation"
+  "caveat": "the wick >= 30% setting was noticed by looking at 2023-2026; only 2021 is a clean confirmation",
+  "status_2026_11_11": "saved for now. High-win-rate version TP $10, closed 20:00 UTC: 59.8% win rate, +$1,074 2019-2026 (exact TP fills, $20/day account). MT5 EA matches the backtest trade for trade; 2026 tester +$96 (feed noise vs +$291). Entry filters, fixed stops and break-even stops tested and rejected. Waiting for demo forward test and the locked 2018 test."
 }

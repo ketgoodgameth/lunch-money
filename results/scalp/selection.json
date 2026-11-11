@@ -1,0 +1,9 @@
+{
+  "pick": null,
+  "passing": [],
+  "best_per_mode": {
+    "fade": "fade 1min quiet tp0.75 sl1",
+    "breakout": "breakout 1min quiet tp0.75 sl1",
+    "pullback": "pullback 1min quiet tp0.75 sl1"
+  }
+}

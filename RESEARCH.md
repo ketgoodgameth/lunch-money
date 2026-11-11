@@ -4,8 +4,9 @@
 
 | Candidate | Settings | Status |
 |---|---|---|
-| **Reaction zone, wick ≥ 30%** (your method, rule-based) | `results/candidates/reaction_zone_wick30.json` | **Most promising.** Clean, locked tests: 2020 +$123 PASS, 2021 +$140 PASS, 2019 −$23 narrow FAIL (+$12 before costs). 2019–2026: 6 of 8 years positive, about +$1,130 (+$1,074 in full-year runs with MT5-style exact take-profit fills). Settings map: all 48 neighbouring settings positive over 2021–2026. Volatility-scaled sizing rejected. 2018 test locked, waiting for data. |
+| **Reaction zone, wick ≥ 30%** (your method, rule-based) | `results/candidates/reaction_zone_wick30.json` | **Most promising, saved.** Clean, locked tests: 2020 +$123 PASS, 2021 +$140 PASS, 2019 −$23 narrow FAIL (+$12 before costs). 2019–2026: 6 of 8 years positive, about +$1,130 (+$1,074 in full-year runs with MT5-style exact take-profit fills). Settings map: all 48 neighbouring settings positive over 2021–2026. Volatility-scaled sizing rejected. 2018 test locked, waiting for data. |
 | New York opening-range breakout, half-range stop | `results/candidates/ny_breakout_half_stop.json` | Weakened. +$837 over 2022–2026 but **failed the clean 2021 test (−$361)**. |
+| Scalping bot (fade / breakout / pullback, 1–15 min bars) | `strategies/scalper.py` | **Rejected.** Built on 2021 (most stable year); round-2 pick +$110 in 2021, then lost in all 7 other years (−$560). |
 
 All tests use real Dukascopy ticks (2022–2025), the simulated broker in `xautest/`, and the same rules:
 $10 risk per trade, stop after the first win, max 2 trades, −$20 daily cap enforced by a $20/day account
@@ -407,3 +408,38 @@ Tried to fix it (`experiments/loss_analysis.py`, `experiments/breakeven.py`), ru
   losers. None beat the baseline in 4 of 6 discovery years. **Rejected.**
 - Conclusion: TP $10 intraday, no stop, stays as it is. Its exits are at a local best (also vs held, tighter
   targets and range-scaled targets earlier), and the entry conditions don't predict losers out of sample.
+
+## Scalping bot (`strategies/scalper.py`, `experiments/scalp.py`), built on 2021, tested on the other 7 years
+
+Rules: 0.01 lots, the $20/day account is the only daily limit (no trade cap, no stop after a win), always a stop
+loss, take profit and stop sized from the ATR of the signal bars, max hold, all closed by 20:00 UTC. $0.20 spread,
+100 ms. Entry types: **fade** (price k ATRs away from EMA20 → trade back), **breakout** (close beyond the last 20
+bars' high/low with the EMA trend), **pullback** (EMA trend + RSI(7) dipping and turning back).
+
+Build year picked by a rule fixed first (`experiments/scalp_year_pick.py`: lowest day-to-day variation of the
+daily range, trend share < 0.25): **2021** (range CV 0.45, trend share 0.03, median spread $0.35).
+
+Selection rule (fixed first): on 2021, ≥ 250 trades, profit factor ≥ 1.10, profit in ≥ 3 of 4 quarters; highest net.
+
+- **Round 1** (48 versions: 3 entry types × 1m/5m bars × active 07–16 / quiet 01–06 + 16–20 UTC × TP 0.75/1.5 ATR
+  × stop 1/2 ATR): **all 48 lost money in 2021**, from −$13 to −$1,275 (up to 6,847 trades). Per trade they lost
+  about the spread: before costs the signals are a coin flip. Breakouts were worst (negative even before costs);
+  only quiet-hours fades had an edge before costs (~+$0.15 a trade), too small for $0.40–0.80 targets.
+- **Round 2** (32 versions, decided after round 1: quiet-hours fades only, 5m/15m bars so targets are a few dollars,
+  spread ≤ 15% of the target): most 15m fades made money in 2021. Pick: **15m fade, quiet hours, k = 2, TP 2 ATR,
+  stop 3 ATR**: 281 trades, 62% won, +$110, PF 1.23.
+- **Unseen years: it lost in all 7.**
+
+| Pick, $0.20 spread | 2019 | 2020 | **2021 (build)** | 2022 | 2023 | 2024 | 2025 | 2026 | 7 test years |
+|---|---|---|---|---|---|---|---|---|---|
+| Trades | 282 | 234 | 281 | 298 | 295 | 315 | 314 | 203 | |
+| Win rate | 53% | 51% | 62% | 52% | 52% | 56% | 51% | 44% | |
+| Net | −$75 | −$128 | +$110 | −$33 | −$103 | −$56 | −$5 | −$160 | **−$560** |
+
+  With $0.05 slippage: −$726. On a Raw account ($0.05 spread + $3.50/side): −$507, so cheaper costs don't save
+  it: it loses before costs in every test year. The best 15m Asia-only fade: −$112 over the test years (2 of 7
+  positive). The best 5m fade: −$1,351, wrecked by the 2025–2026 trends.
+- Conclusion: **no scalper survives.** At 0.01 lots and a $0.20 spread, 1–15 minute signals on gold have no edge
+  that lasts beyond the year they were tuned on; 2021's mean reversion did not repeat. Not adopted, not locked.
+  A scalper would need information these price-only rules don't use (order flow, news timing) or much lower costs
+  plus a real edge before costs, which none of these showed.

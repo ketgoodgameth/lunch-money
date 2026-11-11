@@ -1,0 +1,37 @@
+                                trades  win_rate    net  per_trade    pf  q_pos  stopout_days                                                                              exits
+version                                                                                                                                                                         
+r2 fade 15min asia k2 tp2 sl3      204      61.8  112.6      0.552  1.33      4             0                                             take profit 123, stop loss 67, time 14
+r2 fade 15min quiet k2 tp2 sl3     281      61.9  109.6      0.390  1.23      3             3    take profit 132, end of day close 68, stop loss 68, time 11, account stop-out 2
+r2 fade 15min asia k2 tp1 sl3      183      80.3  104.4      0.571  1.57      4             0                                              take profit 147, stop loss 33, time 3
+r2 fade 15min asia k2 tp1 sl2      212      72.2   84.6      0.399  1.38      4             0                                              take profit 153, stop loss 56, time 3
+r2 fade 15min quiet k2 tp1 sl3     266      74.1   74.8      0.281  1.22      3             3     take profit 180, end of day close 44, stop loss 38, account stop-out 2, time 2
+r2 fade 15min asia k2 tp2 sl2      239      51.5   59.8      0.250  1.16      3             0                                             take profit 121, stop loss 109, time 9
+r2 fade 15min quiet k2 tp1 sl2     308      67.9   59.2      0.192  1.15      2             2     take profit 191, stop loss 72, end of day close 41, account stop-out 2, time 2
+r2 fade 5min asia k2 tp1 sl3        97      80.4   49.9      0.514  1.58      4             0                                               take profit 77, stop loss 13, time 7
+r2 fade 15min quiet k2 tp2 sl2     326      53.4   49.7      0.153  1.09      3             2    take profit 131, stop loss 119, end of day close 68, time 6, account stop-out 2
+r2 fade 5min asia k3 tp2 sl3       205      61.5   35.2      0.172  1.16      2             0                                             take profit 117, stop loss 63, time 25
+r2 fade 15min asia k3 tp2 sl3       39      59.0   35.0      0.896  1.53      3             0                                               take profit 23, stop loss 12, time 4
+r2 fade 5min asia k2 tp1 sl2       102      73.5   33.2      0.325  1.34      4             0                                               take profit 74, stop loss 26, time 2
+r2 fade 15min quiet k3 tp2 sl3      61      57.4   30.3      0.496  1.28      3             0                          take profit 23, end of day close 21, stop loss 14, time 3
+r2 fade 15min quiet k3 tp1 sl3      59      71.2   26.2      0.443  1.34      4             0                                   take profit 37, end of day close 14, stop loss 8
+r2 fade 5min quiet k2 tp1 sl2      260      68.1   25.1      0.096  1.08      3             0                         take profit 171, stop loss 68, time 12, end of day close 9
+r2 fade 5min asia k3 tp1 sl2        34      82.4   24.1      0.709  1.85      3             0                                                        take profit 28, stop loss 6
+r2 fade 15min asia k3 tp1 sl2       37      75.7   23.4      0.634  1.63      4             0                                                        take profit 28, stop loss 9
+r2 fade 15min asia k3 tp2 sl2       43      48.8   21.4      0.498  1.29      2             0                                               take profit 21, stop loss 21, time 1
+r2 fade 5min quiet k3 tp2 sl3      237      59.9   21.3      0.090  1.07      2             1    take profit 127, stop loss 69, time 28, end of day close 12, account stop-out 1
+r2 fade 15min asia k3 tp1 sl3       36      80.6   20.9      0.579  1.51      3             0                                                        take profit 29, stop loss 7
+r2 fade 5min asia k3 tp1 sl3        34      85.3   19.7      0.578  1.57      3             0                                                take profit 29, stop loss 4, time 1
+r2 fade 5min quiet k3 tp1 sl2       75      72.0   18.9      0.252  1.20      3             0                                               take profit 54, stop loss 19, time 2
+r2 fade 5min quiet k3 tp2 sl2      263      51.7   17.3      0.066  1.06      3             0                       take profit 126, stop loss 116, time 11, end of day close 10
+r2 fade 5min asia k3 tp2 sl2       227      51.5   14.5      0.064  1.06      3             0                                            take profit 112, stop loss 105, time 10
+r2 fade 5min quiet k3 tp1 sl3       69      75.4    8.0      0.116  1.08      3             0                           take profit 51, stop loss 12, time 5, end of day close 1
+r2 fade 15min quiet k3 tp1 sl2      64      65.6    6.0      0.094  1.06      3             0                                  take profit 39, stop loss 15, end of day close 10
+r2 fade 15min quiet k3 tp2 sl2      69      47.8   -1.8     -0.026  0.99      2             0                                  stop loss 28, take profit 22, end of day close 19
+r2 fade 5min quiet k2 tp1 sl3      228      71.1  -11.9     -0.052  0.96      3             2    take profit 154, stop loss 37, time 23, end of day close 12, account stop-out 2
+r2 fade 5min asia k2 tp2 sl3       657      56.2  -25.7     -0.039  0.96      3             0                                            take profit 340, stop loss 235, time 82
+r2 fade 5min asia k2 tp2 sl2       788      47.1  -79.7     -0.101  0.90      1             0                                            stop loss 398, take profit 341, time 49
+r2 fade 5min quiet k2 tp2 sl3      825      55.5  -93.2     -0.113  0.91      1             4  take profit 378, stop loss 249, time 119, end of day close 75, account stop-out 4
+r2 fade 5min quiet k2 tp2 sl2      987      48.0  -98.2     -0.099  0.91      0             0                       stop loss 443, take profit 391, time 77, end of day close 76 
+
+passing the rule: ['r2 fade 15min quiet k2 tp2 sl3', 'r2 fade 15min quiet k2 tp1 sl3']
+pick: r2 fade 15min quiet k2 tp2 sl3 | best of each type: {'r2 fade 5min': 'r2 fade 5min asia k2 tp1 sl3', 'r2 fade 15min': 'r2 fade 15min asia k2 tp2 sl3'}
