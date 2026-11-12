@@ -1,0 +1,5 @@
+{
+  "pick": "TP 0.4 ATR, stop 0.3 ATR",
+  "check_2024_26": true,
+  "beats_baseline": false
+}

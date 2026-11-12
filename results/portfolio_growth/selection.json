@@ -1,0 +1,5 @@
+{
+  "stop": "stop $20",
+  "sizing": "fixed 0.01 lots",
+  "check_2024_26": true
+}

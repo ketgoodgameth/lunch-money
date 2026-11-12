@@ -1,0 +1,9 @@
+{
+  "pick": null,
+  "passing": [],
+  "best_per_mode": {
+    "momentum": "momentum | $4 in 30s | quick",
+    "fade": "fade | $4 in 30s | slow",
+    "fade_limit": "fade_limit | $4 in 30s | slow"
+  }
+}

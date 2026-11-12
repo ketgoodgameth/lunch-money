@@ -1,0 +1,21 @@
+real order: {'3%': '$2,970 (dd 17%)', '5%': '$5,428 (dd 37%)', '10%': '$26,677 (dd 66%)'}
+years in random order, 3%: final 5/50/95% [2527. 2876. 3137.], worst drawdown 5/50/95% [16. 20. 28.]
+years in random order, 5%: final 5/50/95% [6141. 7061. 7817.], worst drawdown 5/50/95% [30. 38. 48.]
+years in random order, 10%: final 5/50/95% [23589. 27764. 31152.], worst drawdown 5/50/95% [57. 68. 79.]
+growth-optimal risk on 2018-2019: 0.5% (average trade $-0.27)
+growth-optimal risk on 2020-2022: 16% (average trade $+0.82)
+growth-optimal risk on 2018-2023: 6% (average trade $+0.24)
+growth-optimal risk on 2024-2026: 22.5% (average trade $+1.77)
+growth-optimal risk on all: 14% (average trade $+0.74)
+stop $15: {'3%': '$2,932 (dd 29%)', '5%': '$6,242 (dd 46%)', '10%': '$5,047 (dd 77%)'}
+stop $20: {'3%': '$2,970 (dd 17%)', '5%': '$5,428 (dd 37%)', '10%': '$26,677 (dd 66%)'}
+stop $25: {'3%': '$2,110 (dd 19%)', '5%': '$4,334 (dd 29%)', '10%': '$10,013 (dd 56%)'}
+stop $35: {'3%': '$1,869 (dd 21%)', '5%': '$2,333 (dd 22%)', '10%': '$4,122 (dd 45%)'}
+every trade $0.1/oz worse: {'3%': '$2,583 (dd 20%)', '5%': '$4,866 (dd 38%)', '10%': '$9,572 (dd 69%)'}
+every trade $0.2/oz worse: {'3%': '$2,128 (dd 23%)', '5%': '$3,493 (dd 39%)', '10%': '$4,771 (dd 70%)'}
+every trade $0.3/oz worse: {'3%': '$1,830 (dd 27%)', '5%': '$1,963 (dd 41%)', '10%': '$2,610 (dd 74%)'}
+every trade $0.5/oz worse: {'3%': '$1,302 (dd 35%)', '5%': '$1,771 (dd 46%)', '10%': '$2,013 (dd 79%)'}
+2018-2024 only: {'3%': '$1,361 (dd 17%)', '5%': '$1,301 (dd 37%)', '10%': '$1,699 (dd 66%)'}
+without the best 3 of 106 months: {'3%': '$1,933 (dd 18%)', '5%': '$2,899 (dd 38%)', '10%': '$5,679 (dd 68%)'}
+without the best 6 of 106 months: {'3%': '$1,540 (dd 19%)', '5%': '$1,879 (dd 35%)', '10%': '$1,437 (dd 69%)'}
+without the best 12 of 106 months: {'3%': '$1,133 (dd 23%)', '5%': '$870 (dd 43%)', '10%': '$371 (dd 82%)'}

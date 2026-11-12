@@ -19,3 +19,8 @@ def test_parse_reads_only_fill_rows():
     assert list(f.leg) == ["entry", "exit: tp", "exit: close"]
     assert f.slip.tolist() == pytest.approx([0.03, 0.0, 0.12])
     assert f.send_ms.tolist() == [85, 0, 140] and f.side[0] == "BUY"
+
+
+def test_parse_reads_stop_loss_fills():
+    f = parse("2026.11.16 13:40:11,fill,exit sl wanted 3980.120 got 3979.950 slip 0.170 send_ms 0 spread 0.300\n")
+    assert list(f.leg) == ["exit: sl"] and f.slip[0] == pytest.approx(0.17)

@@ -3,6 +3,7 @@
     .venv/bin/python mt5_parity.py python    # Python on the MT5 tick export (MetaQuotes-Demo, Oct 2025)
     .venv/bin/python mt5_parity.py tester    # read the EA log from the Strategy Tester run
     .venv/bin/python mt5_parity.py compare   # match the two trade lists
+    .venv/bin/python mt5_parity.py growth    # EA v1.20 ($20 stop, risk % of balance) tester run vs the Python list
 
 Python side: the broker's own bid/ask (no re-quote), no delay, no slippage, $20 daily account, 0.01 lots,
 max 2 a day, stop after a win; version TP $10 closed at 20:00 UTC. Indicators start cold on Oct 1, while the
@@ -39,7 +40,7 @@ def python_side():
     print(f"\n{len(df)} trades, {100 * (df.net_pnl > 0).mean():.0f}% won, net {df.net_pnl.sum():+.2f}; stats {s.stats}")
 
 
-def tester_side():
+def tester_side(out_name: str = "tester_trades.csv"):
     """Read the EA's own log from the Strategy Tester agent folder (newest one) into tester_trades.csv."""
     from pathlib import Path
     mt5 = Path.home() / "Library/Application Support/net.metaquotes.wine.metatrader5/drive_c/Program Files/MetaTrader 5"
@@ -62,9 +63,11 @@ def tester_side():
             rows.append(cur); cur = None
     df = pd.DataFrame(rows)
     OUT.mkdir(parents=True, exist_ok=True)
-    df.to_csv(OUT / "tester_trades.csv", index=False)
+    df.to_csv(OUT / out_name, index=False)
     print(f"read {logs[-1]}\n{ev.event.value_counts().to_dict()}")
-    print(df.to_string() if len(df) else "no trades")
+    if out_name == "tester_trades.csv":
+        print(df.to_string() if len(df) else "no trades")
+    return df, ev
 
 
 def compare():
@@ -98,5 +101,47 @@ def compare():
     r.to_csv(OUT / "comparison.csv", index=False)
 
 
+def growth():
+    """EA v1.20 in the tester (2026, $1,000, $20 stop, risk 3%) against the Python $20-stop list for 2026
+    (Dukascopy, $0.20 spread; results/portfolio_growth). Checks the stop, the sizing and the trade match."""
+    import re
+    mt, ev = tester_side("tester_v120_2026.csv")
+    start = ev[ev.event == "start"].detail.iloc[-1]
+    print("EA start line:", start)
+    mt["entry"] = pd.to_datetime(mt.entry_utc, utc=True)
+    mt["lots"] = mt.entry_detail.str.extract(r"([\d.]+) lots").astype(float)
+    mt["price"] = mt.entry_detail.str.extract(r"lots at ([\d.]+)").astype(float)
+    mt["sl"] = mt.entry_detail.str.extract(r"SL ([\d.]+)").astype(float)
+    mt["balance"] = mt.entry_detail.str.extract(r"balance ([\d.]+)").astype(float)
+    mt["kind"] = mt.exit_detail.str.extract(r"^(.*?) at ")
+    mt["per_oz"] = mt.net / (mt.lots * 100)
+    stop = (mt.sl - mt.price).abs()
+    want = (mt.balance * 0.03 / (20 * 100) / 0.01 + 1e-9).astype(int).clip(lower=1) * 0.01
+    print(f"\n{len(mt)} tester trades, exits {mt.kind.value_counts().to_dict()}")
+    print(f"stop distance from the fill: min {stop.min():.2f}, median {stop.median():.2f}, max {stop.max():.2f} (want 20 +- slippage/spread)")
+    sl = mt[mt.kind == "stop loss"]
+    print(f"stop-loss exits: {len(sl)}, result per oz min {sl.per_oz.min():.2f}, median {sl.per_oz.median():.2f}, max {sl.per_oz.max():.2f}; "
+          f"worst trade of all {mt.per_oz.min():.2f} $/oz")
+    print(f"lots follow 3% of balance in {(abs(mt.lots - want) < 1e-9).sum()} of {len(mt)} trades; sizes used {mt.lots.value_counts().sort_index().to_dict()}")
+    print(f"balance $1,000 -> ${mt.balance.iloc[-1] + mt.net.iloc[-1]:,.2f}; net {mt.net.sum():+.2f}; at 0.01 lots it would be {mt.per_oz.sum():+.2f}; "
+          f"win rate {100 * (mt.net > 0).mean():.0f}%")
+    py = pd.read_csv(ROOT / "results" / "portfolio_growth" / "trades.csv.gz")
+    py = py[(py.stop == "stop $20") & (py.year == 2026)].reset_index(drop=True)
+    py["entry"] = pd.to_datetime(py.entry_time, utc=True, format="ISO8601")
+    used, pairs = set(), []
+    for i, p in py.iterrows():
+        d = (mt.entry - p.entry).abs()
+        j = d.idxmin()
+        if d[j] <= pd.Timedelta(minutes=1) and mt.side[j] == p.side and j not in used:
+            used.add(j); pairs.append((i, j))
+    a = py.loc[[i for i, _ in pairs]].net_pnl.to_numpy(); b = mt.loc[[j for _, j in pairs]].per_oz.to_numpy()
+    same = ((a > 0) == (b > 0)).sum()
+    print(f"\nPython 2026 list (Dukascopy): {len(py)} trades, {py.net_pnl.sum():+.2f} $/oz, win rate {100 * (py.net_pnl > 0).mean():.0f}%")
+    print(f"matched to the minute and side: {len(pairs)}; same win/loss in {same}; Python {a.sum():+.2f} vs tester {b.sum():+.2f} $/oz on those")
+    only_py = py.drop(index=[i for i, _ in pairs]); only_mt = mt.drop(index=[j for _, j in pairs])
+    print(f"Python only: {len(only_py)} trades {only_py.net_pnl.sum():+.2f}; tester only: {len(only_mt)} trades {only_mt.per_oz.sum():+.2f} $/oz")
+    print("fill rows:", ev[ev.event == "fill"].detail.str.extract(r"^(entry|exit \S+)")[0].value_counts().to_dict())
+
+
 if __name__ == "__main__":
-    {"python": python_side, "tester": tester_side, "compare": compare}[sys.argv[1]]()
+    {"python": python_side, "tester": tester_side, "compare": compare, "growth": growth}[sys.argv[1]]()

@@ -1,0 +1,70 @@
+{
+  "locked_at": "2026-11-12T22:30:56.468082+00:00",
+  "data": "2015, 2016, 2017 (not downloaded; never used by any test)",
+  "why": "2018-2026 are all used. Two versions of the reaction zone on a continuous account, 0.01 lots, to be run once.",
+  "pass_rule": "per version, at $0.20 spread: total R (profit / amount risked at the stop) over 2015-2017 above zero AND at least 2 of the 3 years positive; run once, no changes afterwards",
+  "note": "the scaled version was noticed after the scaled_exits grid (it was not the rule's pick there); this test is its only clean evidence. The ATR needs 14 daily bars, so each year starts trading in late January for both versions.",
+  "tests": {
+    "fixed: TP $10, stop $20 (current)": {
+      "file": "reaction_zone.py",
+      "params": {
+        "rsi_overbought": 0.0,
+        "rsi_oversold": 100.0,
+        "use_divergence": false,
+        "zones": "sweep+fvg",
+        "sessions": "07:00-10:00,12:30-16:00",
+        "flat_hour": 20,
+        "tp_usd": 10.0,
+        "sl_mode": "none",
+        "h1_macd_filter": false,
+        "exec_mode": "m5",
+        "min_wick": 0.3,
+        "lots": 0.01,
+        "stop_dist": 20.0,
+        "__rules__": {
+          "use_strategy_lots": true,
+          "max_daily_loss": 1000000000.0,
+          "max_trades": 2,
+          "stop_after_wins": 1
+        }
+      },
+      "broker": {
+        "fixed_spread": 0.2,
+        "slippage": 0.0,
+        "daily_account": null,
+        "initial_balance": 10000000.0
+      }
+    },
+    "scaled: TP 0.4 ATR, stop 0.8 ATR": {
+      "file": "reaction_zone.py",
+      "params": {
+        "rsi_overbought": 0.0,
+        "rsi_oversold": 100.0,
+        "use_divergence": false,
+        "zones": "sweep+fvg",
+        "sessions": "07:00-10:00,12:30-16:00",
+        "flat_hour": 20,
+        "tp_usd": 10.0,
+        "sl_mode": "none",
+        "h1_macd_filter": false,
+        "exec_mode": "m5",
+        "min_wick": 0.3,
+        "lots": 0.01,
+        "tp_atr": 0.4,
+        "stop_atr": 0.8,
+        "__rules__": {
+          "use_strategy_lots": true,
+          "max_daily_loss": 1000000000.0,
+          "max_trades": 2,
+          "stop_after_wins": 1
+        }
+      },
+      "broker": {
+        "fixed_spread": 0.2,
+        "slippage": 0.0,
+        "daily_account": null,
+        "initial_balance": 10000000.0
+      }
+    }
+  }
+}

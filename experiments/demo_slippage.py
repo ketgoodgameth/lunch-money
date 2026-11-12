@@ -5,8 +5,9 @@
 Default log: the newest ReactionZoneEA_<login>.csv in the MT5 data folder (MQL5/Files). The EA (v1.10+) writes a
 "fill" row for every entry and exit:
     entry BUY wanted 4000.120 got 4000.150 slip 0.030 send_ms 85 spread 0.200
-    exit close|tp|broker_stopout wanted ... got ... slip ... send_ms ... spread ...
-"wanted" is the price on screen when the order was sent (the TP price for a TP exit); slip > 0 means a worse fill,
+    exit close|tp|sl|broker_stopout wanted ... got ... slip ... send_ms ... spread ...
+"wanted" is the price on screen when the order was sent (the TP / stop price for a TP / stop-loss exit, v1.20);
+slip > 0 means a worse fill,
 in $/oz (= $ per trade at 0.01 lots). send_ms is how long the order took.
 The backtest assumes 100 ms and no slippage; results/execution_costs/summary.csv has the same strategy re-run with
 $0.05 / $0.10 / $0.30 slippage on market entries and market exits, which this script uses to translate the measured

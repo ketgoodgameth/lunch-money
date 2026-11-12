@@ -1,0 +1,30 @@
+== $1,000 account, risk 3% per trade, $20 stop ==
+                 boot median  boot 5%  boot dd>=30%  boot dd>=50%  boot dd median%  check 24-26  check dd%  full 18-26  full dd%  trades skipped (full)  adopt
+guardrail                                                                                                                                                    
+none                   1180      736          19.9           1.8               21         2316         13        2970        17                      0  False
+month stop 3 R         1196      772          16.4           0.9               20         2291         12        3014        16                     32   True
+month stop 4 R         1171      721          21.1           2.5               22         2161         14        2766        20                      6  False
+month stop 6 R         1180      736          19.9           1.8               21         2316         13        2970        17                      0  False
+week stop 2 R          1190      752          18.5           1.4               20         2339         10        2625        18                     16   True
+week stop 3 R          1174      730          20.2           2.0               21         2431         12        3072        16                      4  False
+streak 3               1181      736          19.3           1.8               21         2335         13        3037        17                      0   True
+streak 4               1180      736          19.7           1.8               21         2312         13        3003        17                      0   True
+brake 10%              1181      736          18.6           1.8               20         2316         13        2821        17                      0   True
+brake 15%              1181      736          18.9           1.8               21         2316         13        2837        17                      0   True
+brake 20%              1180      736          19.2           1.8               21         2316         13        2970        17                      0   True 
+
+== $1,000 account, risk 5% per trade, $20 stop ==
+                 boot median  boot 5%  boot dd>=30%  boot dd>=50%  boot dd median%  check 24-26  check dd%  full 18-26  full dd%  trades skipped (full)  adopt
+guardrail                                                                                                                                                    
+none                   1210      587          84.2          22.1               40         5345         29        5428        37                      0  False
+month stop 3 R         1295      604          81.0          17.8               39         4948         27        5675        33                     32  False
+month stop 4 R         1190      566          84.8          23.5               41         4749         31        4947        38                      6  False
+month stop 6 R         1210      587          84.2          22.1               40         5345         29        5428        37                      0  False
+week stop 2 R          1265      601          83.2          20.4               39         4847         25        5537        37                     16  False
+week stop 3 R          1205      579          84.7          22.8               40         5415         26        5428        37                      4  False
+streak 3               1322      599          79.0          17.5               38         4882         31        5714        35                      0  False
+streak 4               1245      586          83.0          20.5               39         5306         27        5539        37                      0   True
+brake 10%              1206      679          36.5           4.0               27         3403         17        3053        24                      0  False
+brake 15%              1201      658          49.8           5.9               30         4058         21        4564        27                      0  False
+brake 20%              1189      634          65.5           7.6               33         3571         25        4149        32                      0  False 
+

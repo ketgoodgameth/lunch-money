@@ -8,6 +8,7 @@
 | New York opening-range breakout, half-range stop | `results/candidates/ny_breakout_half_stop.json` | Weakened. +$837 over 2022–2026 but **failed the clean 2021 test (−$361)**. |
 | Scalping bot (fade / breakout / pullback, 1–15 min bars) | `strategies/scalper.py` | **Rejected.** Built on 2021 (most stable year); round-2 pick +$110 in 2021, then lost in all 7 other years (−$560). |
 | Direction-filtered scalps (reaction zone picks the side) | `strategies/bias_scalp.py` | **Rejected.** All 72 versions lost in every year 2019–2026. The direction is worth about +$0.04/oz per scalp (flipped versions lose more in every year), but the $0.20 spread is 5× that. |
+| HFT-style tick bot (burst momentum / fade, seconds to minutes) | `strategies/hft.py` | **Rejected.** None of 24 versions passed on 2021; the best of each mode lost about the spread per trade (−$0.20) on the other eight years, and lost even at zero cost. |
 
 All tests use real Dukascopy ticks (2022–2025), the simulated broker in `xautest/`, and the same rules:
 $10 risk per trade, stop after the first win, max 2 trades, −$20 daily cap enforced by a $20/day account
@@ -607,3 +608,177 @@ were checked against the grid on 2026 (same results to the cent).
   modelled and held trades stay open for days, 1:3 and 1:5 held lost in 2019 (−$95, −$145) and in 2026.
 - 2018 is now used. There is no unseen year left before 2018 in the data; new ideas need new data (2017 or
   earlier) or a live demo forward test.
+
+### HFT-style tick bot (`strategies/hft.py`, `experiments/hft.py`, `experiments/hft_signals.py`), built on 2021
+
+Asked for as an experiment. Tick-driven: a burst in the mid price ($0.4 in 1 s, $0.8 in 5 s, $2 or $4 in 30 s)
+is followed (momentum), faded at market, or faded with a resting limit; exits quick ($0.5 target and stop, 60 s)
+or slow ($2, $2, 300 s). The $50-a-day rules, 0.01 lots, 100 ms delay, 01:00–20:00 UTC. The data has no order
+book and no volume, so this is tick-speed trading as a retail account sees it, not exchange market making.
+
+Before costs (2021, events at least 60 s apart): tick signals do predict, with high t-stats, but by
+$0.005–0.02/oz over the next 1–60 s (burst $0.4 in 1 s: +$0.010 after 5 s, t 5.4; run of 8 ticks: +$0.004,
+t 8.4). The spread is $0.20. Only the rare $4-in-30-s burst moved further (−$0.78 over 300 s, 185 events, t −1.9).
+
+Selection rule fixed before running (2021 at $0.20: ≥ 250 trades, profit factor ≥ 1.10, profit in ≥ 3 of 4
+quarters): **none of the 24 versions passed.** 23 of 24 lost at $0.20, by about the spread per trade (−$0.20);
+18 of 24 lost even at zero cost; momentum lost in every version at zero cost. The best of each mode on the
+other eight years (2018–2020, 2022–2026), net $ per trade over all years:
+
+| Version | $0.20 | $0.20, no delay | Raw $0.05 + $3.50/side | Zero cost | Test years + at $0.20 | Test years net at $0.20 |
+|---|---|---|---|---|---|---|
+| Fade $4 in 30 s, slow | −0.202 | −0.200 | −0.133 | −0.017 | 1 of 8 | −$6,896 |
+| Fade with limit, $4 in 30 s, slow | −0.216 | −0.221 | −0.132 | −0.025 | 2 of 8 | −$5,932 |
+| Momentum $4 in 30 s, quick | −0.263 | −0.255 | −0.208 | −0.100 | 0 of 8 | −$12,130 |
+
+- **Rejected.** Every version loses about the spread on every trade; there is no edge left to cover any cost.
+  Removing the 100 ms delay changes nothing, so speed is not what is missing.
+- 2025–2026 carry most of the loss (−$1,154 and −$5,220 for the fade): with gold above $3,000 a $4 burst is
+  common, the bot trades far more often and hits the $50 cap on 91 days. A fixed-dollar trigger does not
+  travel across price levels.
+- Same conclusion as the scalper and the direction-filtered scalps: below a few minutes the predictable part
+  of the move is a few cents and the spread is 20.
+
+### Risk management for growth: a $1,000 account that compounds (`experiments/portfolio_growth.py`, 2018–2026, $0.20)
+
+New goal from the user (2026-11-12): grow the portfolio instead of risking a set budget per day; start with
+$1,000. Reaction zone unchanged (wick 30%, TP $10, flat 20:00 UTC, max 2 trades a day, a win ends the day) on one
+continuous account, with a real stop loss a fixed distance from entry. With a price-distance stop a trade's
+result per ounce does not depend on its size, so sizing rules are exact re-scalings of one trade list per stop
+(lots rounded down to 0.01, minimum 0.01). Checked in the engine: `stop_dist` + `risk_pct` in the strategy,
+each year started from the simulated balance, ends within cents of the re-scaled list (3% and 10% risk).
+
+Trade lists at 0.01 lots, net $ 2018–2026: no stop +786 (worst trade −$238/oz), stop $10 +382, $15 +724,
+**$20 +1,046**, $25 +957, $35 +869, $50 +880. 6 of 9 years positive at $15 and wider (2018, 2019, 2023 lose).
+
+Selection fixed before running: 2,000 five-year paths drawn month by month from 2018–2023; fewer than 5% of
+paths may fall 50% from a high; highest median final equity. Check: real 2024–2026 from $1,000.
+**Pick: $20 stop at the smallest size** (0.01 lots; at $1,000 that is already 2% per trade, so "risk 1%" and
+"risk 2%" are the same thing). **Check: PASS** ($1,000 → $1,816, worst drawdown 11%).
+
+$20 stop, by sizing rule:
+
+| Risk per trade | 5 years from 2018–23 months: median / worst 5% | Paths that fall 50% | Real 2018–2026 from $1,000 | Worst drawdown | 5 years from all nine years: median / worst 5% | Paths that fall 30% |
+|---|---|---|---|---|---|---|
+| 0.01 lots (≈ 2%) | $1,185 / $736 | 1.7% | $2,046 | 16% | $1,599 / $1,132 | 2.5% |
+| 3% | $1,180 / $736 | 1.8% | $2,970 | 17% | $1,765 / $1,117 | 5.2% |
+| 5% | $1,210 / $587 | 22% | $5,428 | 37% | $2,940 / $1,043 | 73% |
+| 5% + brake | $1,201 / $658 | 5.9% | $4,564 | 27% | $2,142 / $1,038 | 25% |
+| 7.5% | $1,234 / $382 | 73% | $14,722 | 57% | $4,675 / $909 | 99% |
+| 10% | $1,122 / $227 | 95% | $26,677 | 66% | $6,559 / $685 | 100% |
+| 10% + brake | $1,178 / $542 | 41% | $8,720 | 41% | $3,308 / $807 | 99% |
+
+(brake = risk halved while the balance is 15% or more below its high; the all-nine-years columns are for
+information and were not used to select.)
+
+- **Sizing cannot create growth the entries do not have.** On 2018–2023 months the typical five-year result is
+  about +19% whatever the risk; more risk only widens the range and one path in four ends below $1,000.
+- **The large numbers are the 2024–2026 edge, leveraged with hindsight** (`portfolio_growth.py stress`). The
+  order of the years is not the reason: with the years in random order 10% still ends at $23,600–$31,200
+  (5th–95th percentile) and 5% at $6,100–$7,800; order only changes the drawdown on the way (57–79% at 10%).
+  What they depend on:
+  - the last two years: on 2018–2024 alone 3% / 5% / 10% end at $1,361 / $1,301 / $1,699;
+  - a few months: without the best 3 of 106 months 10% ends at $5,679, without the best 6 at $1,437, without
+    the best 12 at $371 (5%: $2,899 / $1,879 / $870);
+  - fill quality: every trade $0.10/oz worse takes 10% from $26,677 to $9,572, $0.20 worse to $4,771
+    (5%: $4,866 / $3,493; 3%: $2,583 / $2,128);
+  - the stop: at 10% a $15 stop ends at $5,047, $20 at $26,677, $25 at $10,013 (5%: $6,242 / $5,428 / $4,334).
+- **The risk level is itself a fitted number.** The growth-optimal risk is 0.5% on 2018–2019, 16% on 2020–2022,
+  6% on 2018–2023, 22.5% on 2024–2026 and 14% on all years. 10% looks good only because it is below the
+  whole-sample optimum, which is known only afterwards; on 2018–2023 it is above the optimum and lowers growth.
+  On reshuffled months 10% falls 50% from a high in 95% (2018–23) or 89% (all years) of paths.
+- **3% is the point where compounding is nearly free:** the same worst-5% outcome and 50%-drawdown risk as the
+  minimum size in the weak years, and +$900 more on the real path. Growth-optimal risk measured on 2018–2023 is
+  about 6%, so 3% is roughly half of it. Above 5% the drawdowns become the main feature.
+- The brake cuts deep drawdowns at 5% and above (22% → 5.9% of paths) and costs growth in the good years; at 3%
+  it changes almost nothing.
+- A $20 stop is the old $20-a-day account in another form, and the best distance again; without a stop one
+  trade lost $238/oz, 24% of a $1,000 account at the minimum size.
+- No unseen year is left, the edge is concentrated in 2024–2026, slippage is not included, and the MT5 tester
+  made a third of the backtest's profit in 2026. Treat every number here as an upper range, not a forecast.
+
+**MT5 EA v1.20** (2026-11-12): `InpStopDist` (default $20/oz), `InpRiskPct` (% of balance at the stop, default 0 =
+fixed lots), `InpDdBrakePct`, and `InpDailyAccount` now defaults to 0 (off). Stop-loss exits are logged as `fill`
+rows (`exit sl`). Compiled with 0 errors; Strategy Tester check below; not yet run on a demo. HFT is abandoned at the
+user's request; its code and results stay in the repo as a record.
+
+### Drawdown guardrails on the compounding account (`experiments/guardrails.py`, $20-stop list, no new backtests)
+
+Pause and step-down rules on the $1,000 account at 3% and 5% risk: stop for the month after −3/−4/−6 R, stop for
+the week after −2/−3 R, half risk after 3/4 losses in a row, half risk while 10/15/20% below the high. Rule fixed
+before running: adopt only if fewer build-period paths (2,000 five-year paths from 2018–2023 months) fall 30%
+from a high, the median stays within 2%, and real 2024–2026 ends within 5% of having no guardrail.
+
+| Guardrail | 3%: paths falling 30% | 3%: median | 3%: real 2018–26 | 5%: paths falling 30% / 50% | 5%: median | 5%: real 2024–26 | 5%: real 2018–26 |
+|---|---|---|---|---|---|---|---|
+| none | 19.9% | $1,180 | $2,970 | 84% / 22% | $1,210 | $5,345 | $5,428 |
+| month stop 3 R | 16.4% | $1,196 | $3,014 | 81% / 18% | $1,295 | $4,948 | $5,675 |
+| month stop 4 R | 21.1% | $1,171 | $2,766 | 85% / 24% | $1,190 | $4,749 | $4,947 |
+| week stop 2 R | 18.5% | $1,190 | $2,625 | 83% / 20% | $1,265 | $4,847 | $5,537 |
+| streak 3 | 19.3% | $1,181 | $3,037 | 79% / 18% | $1,322 | $4,882 | $5,714 |
+| brake 10% | 18.6% | $1,181 | $2,821 | 37% / 4% | $1,206 | $3,403 | $3,053 |
+| brake 15% | 18.9% | $1,181 | $2,837 | 50% / 6% | $1,201 | $4,058 | $4,564 |
+| brake 20% | 19.2% | $1,180 | $2,970 | 66% / 8% | $1,189 | $3,571 | $4,149 |
+
+- **At 3% nothing matters.** Several rules pass the letter of the test, but by one to three points, and the
+  effect is not monotone (stopping the month at −3 R helps a little, at −4 R hurts, at −6 R never triggers).
+  That is noise; **none is adopted.** With one or two trades a day and a 2–3% loss per stop there is little for a
+  pause rule to cut.
+- **At 5% only the brake does anything real:** it takes the paths that fall 30% from 84% to 37–66% and those
+  that fall 50% from 22% to 4–8%, and it costs 24–36% of the 2024–2026 result. It fails the rule (growth cost),
+  so it is a trade-off to choose, not an improvement.
+- Pause rules after losses (month, week, streak) neither protect nor cost much: losses in this strategy do not
+  cluster enough for "stop after a bad run" to work.
+
+### MT5 Strategy Tester check of EA v1.20, 2026 (`experiments/mt5_parity.py growth`)
+
+Exness demo `XAUUSDm`, 1 Jan – 1 Nov 2026, $10 target, $20 stop, risk 3% of balance, no daily account
+(generated ticks before 30 Oct, as in the earlier 2026 run). Two passes, same 130 trades:
+
+| Check | $1,000 start | $5,000 start |
+|---|---|---|
+| Stop loss | exactly $20.00 from the fill on all 130 | same |
+| Exits | 90 take profit, 35 stop loss (−$20.00 to −$20.24/oz), 5 end of day | same |
+| Lots | 0.01 on every trade (3% needs $1,334 for 0.02; the balance peaked at $1,307) | 0.07–0.11, equal to 3% of the balance on 130 of 130 trades |
+| Worst single loss | 2.0% of the balance | 3.0% of the balance |
+| Result | $1,000 → $1,177 | $5,000 → $6,266 (high $7,601) |
+
+- vs the Python $20-stop list for the same months (Dukascopy): 104 trades matched to the minute and side, the
+  same win or loss on all 104, +$261 in MT5 vs +$248 in Python per 0.01 lot.
+- The totals differ as before: MT5 +$177 per 0.01 lot vs Python +$356. Trades only MT5 took: 26, −$84; only Python:
+  21, +$107. Feed noise again, and again in the backtest's favour: for 2026 the Exness feed has now made about
+  half (this run) and a third (the v1.00 run) of what the Dukascopy backtest shows.
+- Every entry and exit wrote its `fill` row, including the new `exit sl` kind.
+- Conclusion: the stop and the sizing in the EA do what the Python strategy does. Still to do: a live demo.
+
+### Target and stop scaled to the daily range (`experiments/scaled_exits.py`, 2018–2026, $0.20, 0.01 lots)
+
+Question: is there an edge in the entries themselves, or only in a $10 target that got easier as gold's daily
+range grew? Both exits as a share of the 14-day average daily range (ATR): TP 0.15 / 0.25 / 0.40, stop
+0.30 / 0.50 / 0.80; everything else unchanged. Measured in R (profit ÷ amount risked at the stop). Baseline:
+fixed $10 / $20 on the same dates. Selection fixed before running: build 2018–2023 (R positive in ≥ 4 of 6
+years, highest total R), check 2024–2026, adopt only if it also beats the baseline on $1,000 build paths at 3%.
+
+| Version | R by year 2018 … 2026 | Years + | Total R (t) | Share of R from 2024–26 | Win rate range | $1,000 at 3%, real order |
+|---|---|---|---|---|---|---|
+| Fixed $10 / $20 | −0.9, −1.6, 5.3, 4.1, 8.3, −1.4, 7.1, 14.5, 16.8 | 6 of 9 | +52.3 (2.85) | 73% | 45–74% | $2,894 |
+| TP 0.15, stop 0.3 | −8.3, −17.4, −11.3, −7.7, 7.0, 2.1, 8.8, 4.1, 7.8 | 5 | −14.8 | — | 61–70% | $801 |
+| TP 0.25, stop 0.5 | −11.4, −13.0, −7.0, −2.9, 6.6, −5.8, 3.2, 7.2, 5.4 | 4 | −17.9 | — | 56–66% | $860 |
+| TP 0.4, stop 0.3 (the rule's pick) | −1.7, −2.0, 6.2, 9.1, 2.9, 3.7, 17.3, 16.5, −3.6 | 6 | +48.4 (1.18) | 63% | 44–50% | $1,468 |
+| TP 0.4, stop 0.5 | −0.2, −9.2, 0.3, 3.1, 9.1, −0.2, 4.8, 9.3, 4.2 | 6 | +21.2 (0.75) | 86% | 49–57% | $1,253 |
+| **TP 0.4, stop 0.8** | 3.2, −1.7, 4.3, 3.0, 6.7, 1.0, 6.1, 6.9, 3.4 | **8 of 9** | +32.8 (1.74) | 50% | 52–61% | $1,979 |
+
+- **Verdict by the rule: keep the fixed $10 / $20 exits.** The pick (TP 0.4, stop 0.3) passed its 2024–2026 check
+  but fell 50% from a high in 82% of the $1,000 build paths (median $982 vs $1,217 for the baseline).
+- **With the exits scaled, the win rate is the same every year.** Each scaled version stays inside a band of
+  6 to 10 points from 2018 to 2026. The fixed version's climb from 45% to 74% was the target shrinking relative
+  to the market, not the entries getting better.
+- **Small scaled targets lose.** At 0.15–0.25 ATR the win rate is 50–80% and the result is still negative in
+  2018–2021: the spread is too large a share of a $2–5 target. The fixed version's 2025–2026 profit is the
+  same idea (a target of about 0.1 ATR) at a price level where $10 dwarfs the spread.
+- **The entries do have a modest edge of their own:** TP 0.4, stop 0.8 is positive in 8 of 9 years, including
+  2018, with half its profit outside 2024–2026 and a t-stat of 1.7. It makes less ($1,979 vs $2,894 on the real
+  path) and was not the rule's pick, so it is an observation, not a result. It sits at the corner of the grid
+  (largest target and stop); wider values were not tried, deliberately.
+- **Locked for a clean test:** `results/locked_for_2015_2017.json` holds the fixed version and TP 0.4 / stop 0.8,
+  with a pass rule, before any 2015–2017 data exists here.

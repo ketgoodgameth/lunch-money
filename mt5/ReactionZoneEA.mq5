@@ -9,12 +9,14 @@
 //|  - next 5m MACD/SuperTrend confirmation within 60 min, entry at   |
 //|    market if the 5m close is back beyond the level                |
 //|  - entries only 07:00-10:00 and 12:30-16:00 UTC                   |
-//|  - take profit only; the "daily account" ($20) is the stop:       |
-//|    everything is closed when the day's loss reaches it            |
+//|  - take profit $10 and a stop loss $20 from entry (v1.20); size   |
+//|    is fixed lots or a % of the balance at that stop               |
+//|  - optional "daily account": everything is closed when the day's  |
+//|    loss reaches it (the old $20-a-day rules; 0 = off)             |
 //|  - max 2 orders a day, stop after a win, one position at a time   |
 //+------------------------------------------------------------------+
 #property copyright   "lunch money research"
-#property version     "1.10"
+#property version     "1.20"
 #property description "Reaction-zone strategy, port of the Python backtest. Demo accounts only by default."
 
 #include <Trade/Trade.mqh>
@@ -33,8 +35,11 @@ input group "Version"
 input double InpTakeProfitUSD   = 10.0;   // Take profit, USD per oz (0.01 lot: $1 per $1 move)
 input int    InpFlatHourUTC     = 20;     // Close everything at this UTC hour (24 = hold until TP or stop-out)
 input group "Money"
-input double InpLots            = 0.01;   // Lots
-input double InpDailyAccount    = 20.0;   // Daily account: close all when the loss reaches this many USD
+input double InpLots            = 0.01;   // Lots (used when Risk % is 0)
+input double InpStopDist        = 20.0;   // Stop loss, USD per oz from entry (0 = no stop loss)
+input double InpRiskPct         = 0.0;    // Risk % of balance per trade at the stop (0 = fixed Lots)
+input double InpDdBrakePct      = 0.0;    // Halve the risk while balance is this % below its high (0 = off)
+input double InpDailyAccount    = 0.0;    // Daily account: close all when the day's loss reaches this many USD (0 = off)
 input int    InpMaxTrades       = 2;      // Max orders per UTC day
 input bool   InpStopAfterWin    = true;   // Stop for the day after a winning order
 input group "Entry"
@@ -236,6 +241,8 @@ int    fillSide = 0;                      // side of the EA's open position
 double wantEntry = 0, wantExit = 0, wantTp = 0, entrySpread = 0;
 ulong  entryT0 = 0, exitT0 = 0;           // microsecond clock when the order / close was sent
 double entryMs = 0;                       // time OrderSend took to return
+double wantSl = 0;                        // stop loss price of the open position (0 = none)
+string peakName;                          // terminal global variable holding the balance high (for the brake)
 
 //+------------------------------------------------------------------+
 long gOffsetMs = 0;          // server time minus UTC
@@ -367,6 +374,27 @@ void CloseAll(string why)
          else Log("close failed", StringFormat("%s retcode %d", why, trade.ResultRetcode()));
         }
      }
+  }
+
+// Lots for the next trade: like ReactionZone.equity_size (the account is flat when this is called)
+double TradeLots()
+  {
+   if(InpStopDist <= 0 || InpRiskPct <= 0) return InpLots;
+   double bal = AccountInfoDouble(ACCOUNT_BALANCE);
+   double risk = InpRiskPct / 100.0;
+   if(InpDdBrakePct > 0)
+     {
+      double peak = GlobalVariableCheck(peakName) ? GlobalVariableGet(peakName) : bal;
+      if(bal > peak) peak = bal;
+      GlobalVariableSet(peakName, peak);
+      if(bal <= peak * (1.0 - InpDdBrakePct / 100.0)) risk *= 0.5;
+     }
+   double cs = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_CONTRACT_SIZE);
+   double step = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_STEP);
+   double vmin = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN), vmax = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MAX);
+   if(step <= 0) step = 0.01;
+   double lots = MathFloor(bal * risk / (InpStopDist * cs) / step + 1e-9) * step;
+   return NormalizeDouble(MathMax(vmin, MathMin(vmax, lots)), 2);
   }
 
 void RulesFor(long day)
@@ -507,10 +535,12 @@ void Execute(const MqlTick &t, long ts)
    dayTrades++;
    int side = setup.side;
    double tp = NormalizeDouble(side < 0 ? t.bid - InpTakeProfitUSD : t.ask + InpTakeProfitUSD, _Digits);
-   fillSide = side; wantEntry = side < 0 ? t.bid : t.ask; wantTp = tp; wantExit = 0; entrySpread = spread;
+   double sl = InpStopDist > 0 ? NormalizeDouble(side < 0 ? t.bid + InpStopDist : t.ask - InpStopDist, _Digits) : 0.0;
+   double lots = TradeLots();
+   fillSide = side; wantEntry = side < 0 ? t.bid : t.ask; wantTp = tp; wantSl = sl; wantExit = 0; entrySpread = spread;
    entryT0 = GetMicrosecondCount();
-   bool sent = (side < 0) ? trade.Sell(InpLots, _Symbol, 0, 0, tp, "reaction zone")
-               : trade.Buy(InpLots, _Symbol, 0, 0, tp, "reaction zone");
+   bool sent = (side < 0) ? trade.Sell(lots, _Symbol, 0, sl, tp, "reaction zone")
+               : trade.Buy(lots, _Symbol, 0, sl, tp, "reaction zone");
    entryMs = (GetMicrosecondCount() - entryT0) / 1000.0;
    setup.active = false;
    uint rc = trade.ResultRetcode();
@@ -521,8 +551,8 @@ void Execute(const MqlTick &t, long ts)
       return;
      }
    posDay = day;
-   Log("entry", StringFormat("%s %.2f lots at %.2f, TP %.2f, spread %.2f", side > 0 ? "BUY" : "SELL", InpLots,
-       trade.ResultPrice(), tp, spread));
+   Log("entry", StringFormat("%s %.2f lots at %.2f, TP %.2f, SL %.2f, spread %.2f, balance %.2f", side > 0 ? "BUY" : "SELL",
+       lots, trade.ResultPrice(), tp, sl, spread, AccountInfoDouble(ACCOUNT_BALANCE)));
   }
 
 //+------------------------------------------------------------------+
@@ -556,11 +586,13 @@ void OnTradeTransaction(const MqlTradeTransaction &tr, const MqlTradeRequest &re
    if(fillSide != 0)
      {
       double got = HistoryDealGetDouble(tr.deal, DEAL_PRICE);
-      double want = reason == DEAL_REASON_TP ? wantTp : wantExit;
-      string kind = reason == DEAL_REASON_TP ? "tp" : reason == DEAL_REASON_SO ? "broker_stopout" : "close";
+      double want = reason == DEAL_REASON_TP ? wantTp : reason == DEAL_REASON_SL ? wantSl : wantExit;
+      string kind = reason == DEAL_REASON_TP ? "tp" : reason == DEAL_REASON_SL ? "sl"
+                    : reason == DEAL_REASON_SO ? "broker_stopout" : "close";
       if(want > 0)
          Log("fill", StringFormat("exit %s wanted %.3f got %.3f slip %.3f send_ms %.0f spread %.3f", kind, want, got,
-             fillSide * (want - got), reason == DEAL_REASON_TP ? 0.0 : (GetMicrosecondCount() - exitT0) / 1000.0,
+             fillSide * (want - got),
+             (reason == DEAL_REASON_TP || reason == DEAL_REASON_SL) ? 0.0 : (GetMicrosecondCount() - exitT0) / 1000.0,
              SymbolInfoDouble(_Symbol, SYMBOL_ASK) - SymbolInfoDouble(_Symbol, SYMBOL_BID)));
      }
    if(posDay >= ruleDay && posDay >= 0)
@@ -571,7 +603,7 @@ void OnTradeTransaction(const MqlTradeTransaction &tr, const MqlTradeRequest &re
       if(!dayStopped)
         {
          if(InpStopAfterWin && winStreak >= 1) { dayStopped = true; stopReason = "win"; }
-         else if(dayPnl <= -InpDailyAccount + 1e-9) { dayStopped = true; stopReason = "loss limit"; }
+         else if(InpDailyAccount > 0 && dayPnl <= -InpDailyAccount + 1e-9) { dayStopped = true; stopReason = "loss limit"; }
          else if(InpMaxTrades > 0 && dayTrades >= InpMaxTrades) { dayStopped = true; stopReason = "max trades"; }
          if(dayStopped) Log("day finished", stopReason);
         }
@@ -596,9 +628,16 @@ int OnInit()
    trade.SetDeviationInPoints(100);
    trade.SetTypeFillingBySymbol(_Symbol);
    logName = "ReactionZoneEA_" + IntegerToString(AccountInfoInteger(ACCOUNT_LOGIN)) + ".csv";
+   peakName = "RZEA_peak_" + IntegerToString(AccountInfoInteger(ACCOUNT_LOGIN)) + "_" + IntegerToString(InpMagic);
+   if(InpRiskPct > 0 && InpStopDist <= 0)
+     { Alert("ReactionZoneEA: Risk % needs a stop loss distance (InpStopDist > 0)"); return INIT_PARAMETERS_INCORRECT; }
+   if(InpStopDist > 0 && InpStopDist * 2 <= SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL) * _Point)
+     { Alert("ReactionZoneEA: the stop loss is closer than the broker allows"); return INIT_PARAMETERS_INCORRECT; }
    setup.active = false;
-   Log("start", StringFormat("%s on %s: TP %.2f, flat hour %d UTC, lots %.2f, daily account %.2f, sessions %s UTC",
-       _Symbol, AccountInfoString(ACCOUNT_SERVER), InpTakeProfitUSD, InpFlatHourUTC, InpLots, InpDailyAccount, InpSessions));
+   Log("start", StringFormat("%s on %s: TP %.2f, stop %.2f, flat hour %d UTC, %s, brake %.0f%%, daily account %.2f, sessions %s UTC",
+       _Symbol, AccountInfoString(ACCOUNT_SERVER), InpTakeProfitUSD, InpStopDist, InpFlatHourUTC,
+       InpRiskPct > 0 ? StringFormat("risk %.2f%% of balance", InpRiskPct) : StringFormat("lots %.2f", InpLots),
+       InpDdBrakePct, InpDailyAccount, InpSessions));
    UpdateClock();
    if(CountPositions() > 0) Log("warning", "an open position with this magic number already exists; it is managed as today's");
    warmed = Warmup();
@@ -622,7 +661,7 @@ void OnTick()
 
    // daily account: refill only when flat; close everything when it is used up
    if(day != acctDay && open == 0) { acctDay = day; acctDead = false; floorLevel = eaClosed - InpDailyAccount; }
-   if(open > 0 && eaClosed + Floating() <= floorLevel)
+   if(InpDailyAccount > 0 && open > 0 && eaClosed + Floating() <= floorLevel)
      {
       Log("account stop-out", StringFormat("loss reached %.2f", InpDailyAccount));
       CloseAll("account stop-out");
@@ -644,11 +683,13 @@ void OnTick()
    if(CountPositions() > 0 && (ts % DAY_MS) >= (long)InpFlatHourUTC * 3600000) CloseAll("end of day close");
 
    RulesFor(day);
-   Comment(StringFormat("ReactionZoneEA  TP $%.2f  %s  server UTC%+.1f\n1H trend: %s\nToday: %d orders, P&L %.2f%s\nDaily account left: %.2f%s\nSetup: %s",
-           InpTakeProfitUSD, InpFlatHourUTC >= 24 ? "held" : StringFormat("closed %02d:00 UTC", InpFlatHourUTC), gOffsetMs / 3600000.0,
+   Comment(StringFormat("ReactionZoneEA  TP $%.2f  stop $%.2f  %s  server UTC%+.1f\n1H trend: %s\nToday: %d orders, P&L %.2f%s\n%s%s\nSetup: %s",
+           InpTakeProfitUSD, InpStopDist, InpFlatHourUTC >= 24 ? "held" : StringFormat("closed %02d:00 UTC", InpFlatHourUTC), gOffsetMs / 3600000.0,
            Bias() > 0 ? "up" : Bias() < 0 ? "down" : "none", dayTrades, dayPnl,
            dayStopped ? " (done: " + stopReason + ")" : "",
-           eaClosed + Floating() - floorLevel, acctDead ? " (stopped out)" : "",
+           InpDailyAccount > 0 ? StringFormat("Daily account left: %.2f", eaClosed + Floating() - floorLevel)
+                               : StringFormat("Next trade: %.2f lots, balance %.2f", TradeLots(), AccountInfoDouble(ACCOUNT_BALANCE)),
+           acctDead ? " (stopped out)" : "",
            !setup.active ? "none" : StringFormat("%s at %.2f%s", setup.side > 0 ? "BUY" : "SELL", setup.level,
                                                  setup.confirmed ? ", confirmed" : ", waiting for 5m")));
   }
