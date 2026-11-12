@@ -17,6 +17,9 @@ from xautest.models import dt_to_ms                      # noqa: E402
 
 TICKS = ROOT / "ticks" / "dukascopy"
 YEAR_FILES = {
+    2015: "download/xauusd-tick-2015-01-01-2016-01-01.csv",
+    2016: "download/xauusd-tick-2016-01-01-2017-01-01.csv",
+    2017: "download/xauusd-tick-2017-01-01-2018-01-01.csv",
     2018: "download/xauusd-tick-2018-01-01-2019-01-01.csv",
     2019: "download/xauusd-tick-2019-01-01-2020-01-01.csv",
     2020: "download/xauusd-tick-2020-01-01-2021-01-01.csv",
@@ -36,6 +39,30 @@ RULES = {"risk_per_trade": 10.0, "max_daily_loss": 20.0, "max_trades": 2, "day_s
          "stop_after_wins": 1, "stop_after_losses": 0}
 BROKER = {"commission_per_lot": 0.0, "slippage": 0.0, "latency_ms": 100, "leverage": float("inf"),
           "daily_account": 20.0}
+
+
+def load_candidate(name: str = "reaction_zone_growth") -> dict:
+    """A saved version from results/candidates: {"file", "params", "rules", "broker"} ready for an Engine run.
+    reaction_zone_growth is the current version (entries, $20 stop, sizing, daily rules, cost assumptions)."""
+    import json
+    c = json.loads((ROOT / "results" / "candidates" / f"{name}.json").read_text())
+    broker = {k: (float("inf") if v == "inf" else v) for k, v in c["broker"].items()}
+    return {"file": ROOT / c["strategy_file"], "params": dict(c["params"]), "rules": dict(c["rules"]), "broker": broker}
+
+
+def run_candidate(year: int, name: str = "reaction_zone_growth", **param_overrides):
+    """One full-year backtest of a saved version. Returns (trades DataFrame, final balance)."""
+    from xautest import BrokerConfig, Engine, SimBroker
+    from xautest.cli import load_strategy
+    from xautest.feeds.arrays import ArrayFeed, load_cache
+    from xautest.report import trades_frame
+    from xautest.risk import DailyRiskRules
+    c = load_candidate(name)
+    s = load_strategy(str(c["file"]))(**{**c["params"], **param_overrides})
+    s.risk = DailyRiskRules(**c["rules"])
+    broker = SimBroker(BrokerConfig(**c["broker"]))
+    res = Engine(s, broker, ArrayFeed(load_cache(cache_for(year_file(year))))).run()
+    return trades_frame(res), broker.balance
 
 
 def year_file(year: int) -> Path:

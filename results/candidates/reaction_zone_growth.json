@@ -1,0 +1,115 @@
+{
+  "name": "Reaction zone, growth version: $10 target, $20 stop, one continuous account",
+  "saved_at": "2026-11-12T23:19:11.380036+00:00",
+  "status": "current version (2026-11-13). Not confirmed on unseen data: clean tests of the entry settings passed 2020 and 2021 and failed 2018 and 2019; 78% of the 2018-2026 profit is from 2024-2026; MT5 on the Exness feed made about half the backtest's profit in 2026. Locked test on 2015-2017 and a demo forward test are pending.",
+  "strategy_file": "strategies/reaction_zone.py",
+  "params": {
+    "lots": 0.01,
+    "tp_usd": 10.0,
+    "sl_mode": "none",
+    "sl_buffer": 0.5,
+    "zones": "sweep+fvg",
+    "swing_lookback": 20,
+    "min_wick": 0.3,
+    "rsi_overbought": 0.0,
+    "rsi_oversold": 100.0,
+    "use_divergence": false,
+    "h1_macd_filter": false,
+    "setup_valid_min": 60,
+    "max_fvg_age": 48,
+    "sessions": "07:00-10:00,12:30-16:00",
+    "flat_hour": 20,
+    "max_spread": 0.6,
+    "exec_mode": "m5",
+    "size_mode": "fixed",
+    "account_risk": 10.0,
+    "stop_atr_frac": 0.25,
+    "rr": 0.0,
+    "tp_atr": 0.0,
+    "be_trigger": 0.0,
+    "be_offset": 0.0,
+    "conf_base": 0.0,
+    "conf_step": 0.0,
+    "conf_spike": 2.5,
+    "day_cap": 0.0,
+    "trade_stop_usd": 0.0,
+    "recover": "off",
+    "recover_max_tp": 30.0,
+    "recover_min_room": 5.0,
+    "scratch_after": 0.0,
+    "stop_dist": 20.0,
+    "stop_atr": 0.0,
+    "risk_pct": 0.0,
+    "dd_brake": 0.0
+  },
+  "rules": {
+    "risk_per_trade": 10.0,
+    "max_daily_loss": 1000000000.0,
+    "max_trades": 2,
+    "day_start_hour": 0.0,
+    "stop_after_wins": 1,
+    "stop_after_losses": 0,
+    "use_strategy_lots": true
+  },
+  "broker": {
+    "commission_per_lot": 0.0,
+    "slippage": 0.0,
+    "latency_ms": 100,
+    "daily_account": null,
+    "leverage": "inf",
+    "fixed_spread": 0.2,
+    "initial_balance": 1000.0
+  },
+  "options": {
+    "compounding": {
+      "risk_pct": 3.0,
+      "note": "size each trade so the $20 stop loses 3% of the balance; the selection rule picked the smallest size, 3% is the least fragile compounding level"
+    },
+    "drawdown_brake": {
+      "dd_brake": 0.15,
+      "note": "only worth considering above 3% risk; costs growth"
+    }
+  },
+  "ea_inputs": {
+    "file": "mt5/ReactionZoneEA.mq5 (v1.20)",
+    "InpTakeProfitUSD": 10.0,
+    "InpFlatHourUTC": 20,
+    "InpLots": 0.01,
+    "InpStopDist": 20.0,
+    "InpRiskPct": 0.0,
+    "InpDdBrakePct": 0.0,
+    "InpDailyAccount": 0.0,
+    "InpMaxTrades": 2,
+    "InpStopAfterWin": true,
+    "InpMinWick": 0.3,
+    "InpSwingLookback": 20,
+    "InpSetupValidMin": 60,
+    "InpMaxFvgAge": 48,
+    "InpRsiOverbought": 0.0,
+    "InpRsiOversold": 100.0,
+    "InpSessions": "07:00-10:00,12:30-16:00",
+    "InpMaxSpread": 0.6
+  },
+  "costs_assumed": "$0.20 spread, no commission, 100 ms order delay, no slippage, take profits filled exactly at their price",
+  "backtest": {
+    "net_usd_at_0.01_lots_by_year": {
+      "2018": -29,
+      "2019": -59,
+      "2020": 78,
+      "2021": 112,
+      "2022": 193,
+      "2023": -66,
+      "2024": 145,
+      "2025": 315,
+      "2026": 356
+    },
+    "from_1000_usd_2018_2026": {
+      "0.01 lots": 2046,
+      "risk 3%": 2970
+    },
+    "source": "experiments/portfolio_growth.py"
+  },
+  "alternative_locked": "TP 0.4 x and stop 0.8 x the 14-day average daily range (results/locked_for_2015_2017.json)",
+  "previous_version": "results/candidates/reaction_zone_wick30.json (same entries, no stop loss, $20-a-day account)",
+  "params_note": "every strategy setting is written out, so later changes to the defaults in reaction_zone.py do not change this version"
+}
