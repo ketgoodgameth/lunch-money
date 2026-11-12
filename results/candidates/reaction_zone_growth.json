@@ -1,7 +1,7 @@
 {
   "name": "Reaction zone, growth version: $10 target, $20 stop, one continuous account",
   "saved_at": "2026-11-12T23:19:11.380036+00:00",
-  "status": "current version (2026-11-13). Not confirmed on unseen data: clean tests of the entry settings passed 2020 and 2021 and failed 2018 and 2019; 78% of the 2018-2026 profit is from 2024-2026; MT5 on the Exness feed made about half the backtest's profit in 2026. Locked test on 2015-2017 and a demo forward test are pending.",
+  "status": "current version, NOT confirmed. Clean tests: passed 2020 and 2021; failed 2018, 2019 and the locked 2015-2017 test (run 2026-11-13: -2.9 R, -$59 at 0.01 lots, 1 of 3 years positive). Loses in cheap, quiet years (2016-2019) and 2023; 78% of the 2018-2026 profit is from 2024-2026; MT5 on the Exness feed made about half the backtest's profit in 2026. A bet that gold keeps moving as it has since 2024. Only new data (demo, months not yet traded) can add evidence.",
   "strategy_file": "strategies/reaction_zone.py",
   "params": {
     "lots": 0.01,
@@ -38,13 +38,11 @@
     "recover_min_room": 5.0,
     "scratch_after": 0.0,
     "stop_dist": 20.0,
-    "stop_atr": 0.0,
-    "risk_pct": 0.0,
-    "dd_brake": 0.0
+    "stop_atr": 0.0
   },
   "rules": {
     "risk_per_trade": 10.0,
-    "max_daily_loss": 1000000000.0,
+    "max_daily_loss": 0.0,
     "max_trades": 2,
     "day_start_hour": 0.0,
     "stop_after_wins": 1,
@@ -62,11 +60,17 @@
   },
   "options": {
     "compounding": {
-      "risk_pct": 3.0,
-      "note": "size each trade so the $20 stop loses 3% of the balance; the selection rule picked the smallest size, 3% is the least fragile compounding level"
+      "rules": {
+        "use_strategy_lots": false,
+        "risk_pct": 3.0,
+        "min_lot_fallback": true
+      },
+      "note": "size each trade so the $20 stop loses 3% of the balance (the minimum lot if that is smaller); the selection rule picked the smallest size, 3% is the least fragile compounding level"
     },
     "drawdown_brake": {
-      "dd_brake": 0.15,
+      "rules": {
+        "dd_brake": 0.15
+      },
       "note": "only worth considering above 3% risk; costs growth"
     }
   },
@@ -107,7 +111,12 @@
       "0.01 lots": 2046,
       "risk 3%": 2970
     },
-    "source": "experiments/portfolio_growth.py"
+    "source": "experiments/portfolio_growth.py",
+    "net_usd_at_0.01_lots_2015_2017_locked_test": {
+      "2015": 97,
+      "2016": -34,
+      "2017": -122
+    }
   },
   "alternative_locked": "TP 0.4 x and stop 0.8 x the 14-day average daily range (results/locked_for_2015_2017.json)",
   "previous_version": "results/candidates/reaction_zone_wick30.json (same entries, no stop loss, $20-a-day account)",

@@ -4,7 +4,7 @@
 
 | Candidate | Settings | Status |
 |---|---|---|
-| **Reaction zone, growth version (current)**: $10 target, $20 stop, one continuous account, 0.01 lots or 3% of balance | `results/candidates/reaction_zone_growth.json` (every setting, daily rules, cost assumptions and EA inputs; `common.load_candidate()` / `run_candidate()` load it; `tests/test_current_version.py` keeps Python and the EA in step) | **Current.** 2018–2026 at 0.01 lots: +$1,046, 6 of 9 years; $1,000 → $2,046 (0.01 lots) or $2,970 (3%). Not confirmed on unseen data; 2015–2017 lock and demo forward test pending. |
+| **Reaction zone, growth version (current)**: $10 target, $20 stop, one continuous account, 0.01 lots or 3% of balance | `results/candidates/reaction_zone_growth.json` (every setting, daily rules, cost assumptions and EA inputs; `common.load_candidate()` / `run_candidate()` load it; `tests/test_current_version.py` keeps Python and the EA in step) | **Current.** 2018–2026 at 0.01 lots: +$1,046, 6 of 9 years; $1,000 → $2,046 (0.01 lots) or $2,970 (3%). **Failed the locked 2015–2017 test** (−$59, 1 of 3 years; the scaled-exit version also failed, −$9). Loses in cheap, quiet years; a bet that gold keeps moving as it has since 2024. Demo forward test pending. |
 | **Reaction zone, wick ≥ 30%** (your method, rule-based) | `results/candidates/reaction_zone_wick30.json` | **Most promising, saved.** Clean, locked tests: 2020 +$123 PASS, 2021 +$140 PASS, 2019 −$23 narrow FAIL (+$12 before costs). 2019–2026: 6 of 8 years positive, about +$1,130 (+$1,074 in full-year runs with MT5-style exact take-profit fills). Settings map: all 48 neighbouring settings positive over 2021–2026. Volatility-scaled sizing rejected. **Clean 2018 test (run once): the saved intraday version FAILED, −$29 (−$1 before costs, 10% of trades reached the target); the held versions passed (1:3 held +$191, TP $7.5 held +$87).** Risk rebuild under the $50-a-day rules: no version passed its check, and all three locked $50 versions failed 2018 (primary 0.02 lots: −$56). |
 | New York opening-range breakout, half-range stop | `results/candidates/ny_breakout_half_stop.json` | Weakened. +$837 over 2022–2026 but **failed the clean 2021 test (−$361)**. |
 | Scalping bot (fade / breakout / pullback, 1–15 min bars) | `strategies/scalper.py` | **Rejected.** Built on 2021 (most stable year); round-2 pick +$110 in 2021, then lost in all 7 other years (−$560). |
@@ -783,3 +783,34 @@ years, highest total R), check 2024–2026, adopt only if it also beats the base
   (largest target and stop); wider values were not tried, deliberately.
 - **Locked for a clean test:** `results/locked_for_2015_2017.json` holds the fixed version and TP 0.4 / stop 0.8,
   with a pass rule, before any 2015–2017 data exists here.
+
+### Clean 2015–2017 test (locked in `results/locked_for_2015_2017.json`, run once on 2026-11-13)
+
+Three years no test had touched, downloaded after the lock was written. Both versions on the reaction-zone entries,
+0.01 lots, $0.20 spread, one continuous account. Pass rule: total R above zero and at least 2 of 3 years positive.
+
+| Version | 2015 | 2016 | 2017 | Total R | Net at 0.01 lots | Trades | Result |
+|---|---|---|---|---|---|---|---|
+| Fixed: TP $10, stop $20 (current) | +4.8 R (+$97) | −1.7 R (−$34) | −6.1 R (−$122) | −2.9 (t −0.41) | −$59 | 449 | **FAIL** |
+| Scaled: TP 0.4 ATR, stop 0.8 ATR | +6.7 R (+$77) | −3.2 R (−$45) | −4.1 R (−$41) | −0.6 (t −0.06) | −$9 | 433 | **FAIL** |
+
+- **Both fail.** On unseen data the current version lost a little and the scaled version broke even. Neither shows
+  an edge in these years.
+- **The fixed target is out of reach again:** 21%, 19% and 8% of trades reached $10 (2018: 10%, 2021: 41%, 2026:
+  74%). The $20 stop was almost never touched (0–3%), so nearly every trade was closed at 20:00.
+- **Scaling the exits does not rescue quiet years.** Its win rate is where it always is (49–59%), but with a stop of
+  $9–13 the target is about $4–6 and the $0.20 spread takes 3–5% of it; the result is zero.
+- **The full record now.** Years the current version loses: 2016, 2017, 2018, 2019, 2023. Years it makes money:
+  2015, 2020, 2021, 2022, 2024, 2025, 2026. Clean tests: passed 2020 and 2021, failed 2018, 2019 and 2015–2017.
+  Every losing year except 2023 is a year when gold was cheap and quiet.
+- **What this means:** the strategy is a bet that gold keeps moving the way it has since 2024, not an edge that
+  holds in all conditions. With every year from 2015 used, only new data (the demo, or months not yet traded)
+  can add evidence.
+
+**Sizing moved into the daily rules (2026-11-13).** `DailyRiskRules` now has `risk_pct` (size from the balance and the
+strategy's stop), `dd_brake`, `max_stop` and `min_lot_fallback` (trade the minimum lot instead of skipping when the
+sized trade is smaller); `max_daily_loss = 0` means no cap, and with `risk_pct` the cap is off unless set. The
+strategy keeps only where the stop goes (`stop_dist`, `stop_atr`); its own `risk_pct` / `dd_brake` are removed.
+Re-run after the change, identical to before: the saved version on 2026 (125 trades, +$355.74), the old $20-a-day
+version on 2026 (117 trades, +$291.03), and the 3% and 10% compounding runs for all nine years
+(`portfolio_growth.py confirm`, every year-end balance unchanged).

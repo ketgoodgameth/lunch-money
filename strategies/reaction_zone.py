@@ -129,11 +129,9 @@ class ReactionZone(Strategy):
         "recover_max_tp": 30.0,   # "target": never aim further than this ($/oz)
         "recover_min_room": 5.0,  # "size": keep at least this much adverse move ($/oz) inside what is left
         "scratch_after": 0.0,  # once a trade has been this many $/oz under water, move its TP to break-even
-        "stop_dist": 0.0,      # stop loss this many $/oz from entry (0 = off); for an account that compounds
+        "stop_dist": 0.0,      # stop loss this many $/oz from entry (0 = off). Size comes from the daily rules:
+                               # DailyRiskRules(risk_pct=...) sizes each trade from the balance and this stop
         "stop_atr": 0.0,       # stop loss this many x the 14-day average daily range from entry (0 = off)
-        "risk_pct": 0.0,       # with stop_dist: size each trade so the stop loses this % of the account balance
-                               # (rounded down to 0.01 lots, never below 0.01); 0 = trade `lots`
-        "dd_brake": 0.0,       # halve risk_pct while the balance is this share (e.g. 0.15) below its high
     }
 
     def on_start(self):
@@ -224,9 +222,9 @@ class ReactionZone(Strategy):
         p = self.p
         if p.stop_atr > 0:
             stop = p.stop_atr * self.datr.value
-            return self.equity_size(lots, stop), tp_dist, stop
+            return lots, tp_dist, stop
         if p.stop_dist > 0:
-            return self.equity_size(lots, p.stop_dist), tp_dist, p.stop_dist
+            return lots, tp_dist, p.stop_dist
         if p.day_cap <= 0:
             return lots, tp_dist, None
         lost = -min(self.pnl_by_day.get(ts // 86_400_000, 0.0), 0.0)
@@ -241,18 +239,6 @@ class ReactionZone(Strategy):
         if p.trade_stop_usd > 0:
             stop = min(p.trade_stop_usd, left) / (lots * 100)
         return lots, tp_dist, stop
-
-    def equity_size(self, lots: float, stop: float) -> float:
-        """Lots that lose risk_pct of the current balance at the stop (the account is flat when this is called)."""
-        p = self.p
-        if p.risk_pct <= 0:
-            return lots
-        bal = self.broker.balance
-        self._peak = max(getattr(self, "_peak", bal), bal)
-        risk = p.risk_pct / 100.0
-        if p.dd_brake > 0 and bal <= self._peak * (1 - p.dd_brake):
-            risk *= 0.5
-        return round(max(int(bal * risk / (stop * 100.0) / 0.01 + 1e-9) * 0.01, 0.01), 2)
 
     # ---------------------------------------------------------------- confidence: how much to trade today
     def confidence(self, side: int, ts: int) -> float:

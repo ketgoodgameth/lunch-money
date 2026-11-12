@@ -1,0 +1,16 @@
+2015: 25,767,375 ticks, 2015-01-01 23:00:08.011000+00:00 -> 2015-12-31 21:59:53.801000+00:00, out-of-order 0, weekdays without ticks: ['04-03', '12-25']
+2016: 46,200,033 ticks, 2016-01-03 23:00:03.541000+00:00 -> 2016-12-30 21:59:55.838000+00:00, out-of-order 0, weekdays without ticks: ['03-25']
+2017: 45,836,980 ticks, 2017-01-02 23:00:00.399000+00:00 -> 2017-12-29 21:58:58.916000+00:00, out-of-order 0, weekdays without ticks: ['04-14']
+caching xauusd-tick-2017-01-01-2018-01-01.csv...
+
+                                         trades  win%    R  net $ (0.01 lots)   TP%   SL%  avg stop $
+version                           year                                                              
+fixed: TP $10, stop $20 (current) 2015     146  51.4  4.8               97.0  21.0   2.0        20.0
+                                  2016     149  44.3 -1.7              -34.0  19.0   3.0        20.0
+                                  2017     154  45.5 -6.1             -122.0   8.0   0.0        20.0
+scaled: TP 0.4 ATR, stop 0.8 ATR  2015     142  58.5  6.7               77.0  42.0  11.0        11.0
+                                  2016     142  48.6 -3.2              -45.0  37.0   8.0        12.6
+                                  2017     149  54.4 -4.1              -41.0  39.0  17.0         8.7 
+
+fixed: TP $10, stop $20 (current): FAIL (total R -2.9, 1 of 3 years positive, t -0.41, net $-59 at 0.01 lots, 449 trades)
+scaled: TP 0.4 ATR, stop 0.8 ATR: FAIL (total R -0.6, 1 of 3 years positive, t -0.06, net $-9 at 0.01 lots, 433 trades)

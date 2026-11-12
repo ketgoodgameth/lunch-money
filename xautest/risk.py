@@ -5,7 +5,12 @@ resize it. Strategies need no changes; they just need to set a stop loss so the 
 
 Rules (all optional, per day):
   * risk_per_trade    size each trade so hitting its stop loses this many USD
-  * max_daily_loss    stop for the day once closed losses reach this; never risk more than what is left
+  * risk_pct          instead: size each trade so its stop loses this % of the account balance (compounding)
+  * dd_brake          with risk_pct: half that risk while the balance is this share (0.15 = 15%) below its high
+  * min_lot_fallback  when the sized trade is smaller than the minimum lot: True trades the minimum lot (more risk
+                      than asked for), False skips the trade (the default)
+  * max_daily_loss    stop for the day once closed losses reach this; never risk more than what is left.
+                      0 = no daily cap. Left unset it is 20, or no cap when risk_pct is used.
   * max_trades        stop after this many trades (0 = no limit)
   * stop_after_wins   stop after this many winning trades in a row (1 = first win; 0 = never)
   * stop_after_losses stop after this many losing trades in a row (0 = never)
@@ -14,6 +19,7 @@ Rules (all optional, per day):
                       in that period reach this many USD (0 = off)
   * min_stop          skip trades whose stop is closer than this many USD/oz (e.g. to keep a per-ounce
                       cost below a set share of the risk: $0.20 / 3% = $6.67)
+  * max_stop          skip trades whose stop is further than this many USD/oz (0 = no maximum)
   (stop_after_win=True is the older spelling of stop_after_wins=1)
 One position at a time, so each trade's result is known before the next one is allowed.
 """
@@ -39,7 +45,7 @@ class DayState:
 @dataclass
 class DailyRiskRules:
     risk_per_trade: float = 10.0
-    max_daily_loss: float = 20.0
+    max_daily_loss: float | None = None   # None: 20, or 0 (no cap) with risk_pct; 0 = no daily cap
     max_trades: int = 2
     stop_after_win: bool = True
     day_start_hour: float = 0.0   # UTC hour the trading day starts (Exness server time is UTC)
@@ -50,7 +56,11 @@ class DailyRiskRules:
     fixed_lots: float | None = None   # trade this size regardless of the stop; trades without a stop allowed
     use_strategy_lots: bool = False   # trade the size the strategy asks for; trades without a stop allowed
     weekly_loss_limit: float = 0.0
-    monthly_loss_limit: float = 0.0   # trade this size regardless of the stop; trades without a stop allowed
+    monthly_loss_limit: float = 0.0
+    risk_pct: float = 0.0             # > 0: risk this % of the balance per trade instead of risk_per_trade
+    dd_brake: float = 0.0             # > 0: half risk_pct while the balance is this share below its high
+    max_stop: float = 0.0             # skip trades whose stop is further than this, USD/oz (0 = off)
+    min_lot_fallback: bool = False    # sized below the minimum lot: trade the minimum lot instead of skipping
 
     days: dict[int, DayState] = field(default_factory=dict)
     stats: dict[str, int] = field(default_factory=lambda: {
@@ -60,10 +70,24 @@ class DailyRiskRules:
     month_pnl: dict[tuple, float] = field(default_factory=dict)
     _order_day: dict[int, int] = field(default_factory=dict)     # order id -> day it was sent
     _position_day: dict[int, int] = field(default_factory=dict)  # position id -> that day
+    _peak_balance: float = 0.0
 
     def __post_init__(self):
         if self.stop_after_wins is None:
             self.stop_after_wins = 1 if self.stop_after_win else 0
+        if self.max_daily_loss is None:
+            self.max_daily_loss = 0.0 if self.risk_pct > 0 else 20.0
+
+    def target_risk(self, broker) -> float:
+        """Dollars to risk on the next trade, before the daily cap (the account is flat when this is called)."""
+        if self.risk_pct <= 0:
+            return self.risk_per_trade
+        bal = broker.balance
+        self._peak_balance = max(self._peak_balance, bal)
+        pct = self.risk_pct / 100.0
+        if self.dd_brake > 0 and bal <= self._peak_balance * (1.0 - self.dd_brake):
+            pct *= 0.5
+        return bal * pct
 
     @staticmethod
     def week_of(day: int) -> int:
@@ -108,7 +132,9 @@ class DailyRiskRules:
         if sl is None:
             self.stats["skipped_no_stop"] += 1
             return None
-        budget = min(self.risk_per_trade, self.max_daily_loss + min(st.pnl, 0.0))
+        budget = self.target_risk(broker)
+        if self.max_daily_loss:
+            budget = min(budget, self.max_daily_loss + min(st.pnl, 0.0))
         if budget < self.min_risk:
             st.stopped = st.stopped or "loss limit"
             self.stats["blocked_day_done"] += 1
@@ -122,10 +148,15 @@ class DailyRiskRules:
         if stop_dist < self.min_stop:
             self.stats["skipped_stop_too_tight"] += 1
             return None
-        lots = int(budget / (stop_dist * cfg.contract_size) / cfg.lot_step + 1e-9) * cfg.lot_step
-        if lots < cfg.min_lot:
+        if self.max_stop and stop_dist > self.max_stop:
             self.stats["skipped_stop_too_wide"] += 1
             return None
+        lots = int(budget / (stop_dist * cfg.contract_size) / cfg.lot_step + 1e-9) * cfg.lot_step
+        if lots < cfg.min_lot:
+            if not self.min_lot_fallback:
+                self.stats["skipped_stop_too_wide"] += 1
+                return None
+            lots = cfg.min_lot
         st.trades += 1
         self.stats["approved"] += 1
         return round(lots, 8)
@@ -154,7 +185,7 @@ class DailyRiskRules:
             return
         if self.stop_after_wins and st.win_streak >= self.stop_after_wins:
             st.stopped = "win"
-        elif st.pnl <= -self.max_daily_loss + 1e-9:
+        elif self.max_daily_loss and st.pnl <= -self.max_daily_loss + 1e-9:
             st.stopped = "loss limit"
         elif self.stop_after_losses and st.loss_streak >= self.stop_after_losses:
             st.stopped = "losses"

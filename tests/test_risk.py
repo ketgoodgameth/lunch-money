@@ -145,3 +145,54 @@ def test_weekly_loss_limit_blocks_rest_of_week_then_resets():
     days = sorted({t.entry_ts // day for t in res.trades})
     assert len(res.trades) == 3 and (mon + 2 * day) // day not in days
     assert r.stats["blocked_period_limit"] >= 1
+
+
+class Sizer:
+    """Just enough broker for DailyRiskRules.approve."""
+    def __init__(self, balance, price=3000.0):
+        self.balance, self.positions, self.orders = balance, [], []
+        self.tick = Tick(D1, price, price)
+        self.cfg = BrokerConfig()
+
+
+def lots_for(rules, balance, stop):
+    from xautest.models import SELL, OrderType
+    return rules.approve(Sizer(balance), SELL, OrderType.MARKET, None, 3000.0 + stop)
+
+
+def test_risk_pct_sizes_from_the_balance_and_the_stop():
+    r = DailyRiskRules(risk_pct=3.0, max_trades=0, stop_after_wins=0, min_lot_fallback=True)
+    assert r.max_daily_loss == 0.0                                  # no dollar cap fights the percentage
+    assert lots_for(r, 1400.0, 20.0) == pytest.approx(0.02)         # $42 / ($20 x 100 oz)
+    assert lots_for(r, 5000.0, 20.0) == pytest.approx(0.07)
+    assert lots_for(r, 1000.0, 20.0) == pytest.approx(0.01)         # $30 -> 0.015 -> rounded down
+    assert lots_for(r, 300.0, 20.0) == pytest.approx(0.01)          # below the minimum lot: fallback trades 0.01
+
+
+def test_without_the_fallback_a_trade_smaller_than_the_minimum_lot_is_skipped():
+    r = DailyRiskRules(risk_pct=1.0, max_trades=0, stop_after_wins=0)
+    assert lots_for(r, 1000.0, 20.0) is None and r.stats["skipped_stop_too_wide"] == 1
+    assert lots_for(r, 2000.0, 20.0) == pytest.approx(0.01)
+
+
+def test_drawdown_brake_halves_the_risk_below_the_high():
+    r = DailyRiskRules(risk_pct=10.0, dd_brake=0.15, max_trades=0, stop_after_wins=0)
+    assert lots_for(r, 2000.0, 20.0) == pytest.approx(0.10)
+    assert lots_for(r, 1700.0, 20.0) == pytest.approx(0.04)         # 15% below 2000: 5% of 1700 = $85
+    assert lots_for(r, 1900.0, 20.0) == pytest.approx(0.09)
+
+
+def test_max_stop_skips_wide_stops_and_zero_daily_loss_means_no_cap():
+    r = DailyRiskRules(10, 0, max_trades=0, stop_after_wins=0, max_stop=5.0)
+    assert lots_for(r, 10_000.0, 6.0) is None
+    assert lots_for(r, 10_000.0, 4.0) == pytest.approx(0.02)        # $10 / ($4 x 100) = 0.025 -> 0.02
+    r.days[r.day_of(D1)].pnl = -500.0                               # no cap: a big losing day does not block
+    assert lots_for(r, 10_000.0, 4.0) == pytest.approx(0.02)
+
+
+def test_defaults_and_positional_arguments_are_unchanged():
+    assert DailyRiskRules().max_daily_loss == 20.0
+    r = DailyRiskRules(10, 20, 2, True)
+    assert (r.risk_per_trade, r.max_daily_loss, r.max_trades, r.stop_after_wins, r.risk_pct) == (10, 20, 2, 1, 0.0)
+    r._state(r.day_of(D1)).pnl = -15.0
+    assert lots_for(r, 10_000.0, 1.0) == pytest.approx(0.05)        # only $5 of the $20 day is left

@@ -204,7 +204,7 @@ def analyse():
     pd.DataFrame({f"{a} | {b}": v for (a, b), v in paths.items() if a == pick[0]}).to_csv(OUT / "equity_paths.csv", index=False)
 
 
-CONFIRM = {"risk 3%": {"risk_pct": 3.0}, "risk 10%": {"risk_pct": 10.0}}
+CONFIRM = {"risk 3%": {"risk_pct": 3.0}, "risk 10%": {"risk_pct": 10.0}}     # DailyRiskRules settings
 CONFIRM_STOP = "stop $20"
 
 
@@ -218,8 +218,8 @@ def confirm_one(args):
     from xautest.risk import DailyRiskRules
     logging.getLogger("strategy").setLevel(logging.ERROR)
     s = load_strategy(str(ROOT / "strategies" / "reaction_zone.py"))(
-        **base_params(lots=0.01, stop_dist=STOPS[CONFIRM_STOP], **over))
-    s.risk = DailyRiskRules(**RULES)
+        **base_params(lots=0.01, stop_dist=STOPS[CONFIRM_STOP]))
+    s.risk = DailyRiskRules(**{**RULES, "use_strategy_lots": False, "max_daily_loss": 0.0, "min_lot_fallback": True, **over})
     cfg = {**BROKER, "fixed_spread": 0.20, "slippage": 0.0, "daily_account": None, "initial_balance": start}
     broker = SimBroker(BrokerConfig(**cfg))
     res = Engine(s, broker, ArrayFeed(load_cache(cache_for(year_file(year))))).run()

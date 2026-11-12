@@ -238,35 +238,14 @@ def test_scratch_moves_the_take_profit_to_break_even_after_a_drawdown():
     assert p.tp == pytest.approx(p.entry_price)
 
 
-def test_equity_sizing_risks_a_share_of_the_balance_at_a_fixed_stop_distance():
-    s = make(stop_dist=20.0, risk_pct=3.0)
-    ts = DAY0 + 13 * H
-    s.broker.balance = 1000.0
-    assert s.day_plan(ts, 0.01, 10.0) == (0.01, 10.0, 20.0)       # 3% = $30 -> 0.015 lots -> rounded down to 0.01
-    s.broker.balance = 1400.0
-    assert s.day_plan(ts, 0.01, 10.0)[0] == 0.02                   # $42 / ($20 x 100 oz)
-    s.broker.balance = 300.0
-    assert s.day_plan(ts, 0.01, 10.0)[0] == 0.01                   # never below the minimum lot
-    assert make(stop_dist=20.0).day_plan(ts, 0.03, 10.0) == (0.03, 10.0, 20.0)   # no risk_pct: the given size
-
-
-def test_drawdown_brake_halves_the_risk_below_the_high():
-    s = make(stop_dist=20.0, risk_pct=10.0, dd_brake=0.15)
-    ts = DAY0 + 13 * H
-    s.broker.balance = 2000.0
-    assert s.day_plan(ts, 0.01, 10.0)[0] == 0.10
-    s.broker.balance = 1700.0                                      # 15% below the high of 2000
-    assert s.day_plan(ts, 0.01, 10.0)[0] == 0.04                   # 5% of 1700 = $85 -> 0.04
-    s.broker.balance = 1900.0
-    assert s.day_plan(ts, 0.01, 10.0)[0] == 0.09
+def test_stop_at_a_fixed_distance_leaves_the_size_to_the_daily_rules():
+    s = make(stop_dist=20.0)
+    assert s.day_plan(DAY0 + 13 * H, 0.03, 10.0) == (0.03, 10.0, 20.0)
 
 
 def test_stop_scaled_to_the_daily_range():
-    s = make(stop_atr=0.5, risk_pct=3.0)
+    s = make(stop_atr=0.5)
     s.datr = SimpleNamespace(value=40.0, ready=True)
-    s.broker.balance = 2000.0
-    lots, tp, stop = s.day_plan(DAY0 + 13 * H, 0.01, 10.0)
-    assert stop == pytest.approx(20.0) and lots == 0.03            # $60 risk / ($20 x 100 oz)
+    assert s.day_plan(DAY0 + 13 * H, 0.01, 10.0) == (0.01, 10.0, pytest.approx(20.0))
     s.datr = SimpleNamespace(value=100.0, ready=True)
     assert s.day_plan(DAY0 + 13 * H, 0.01, 10.0)[2] == pytest.approx(50.0)
-    assert s.day_plan(DAY0 + 13 * H, 0.01, 10.0)[0] == 0.01        # $60 / ($50 x 100) -> 0.012 -> 0.01

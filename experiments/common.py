@@ -50,8 +50,10 @@ def load_candidate(name: str = "reaction_zone_growth") -> dict:
     return {"file": ROOT / c["strategy_file"], "params": dict(c["params"]), "rules": dict(c["rules"]), "broker": broker}
 
 
-def run_candidate(year: int, name: str = "reaction_zone_growth", **param_overrides):
-    """One full-year backtest of a saved version. Returns (trades DataFrame, final balance)."""
+def run_candidate(year: int, name: str = "reaction_zone_growth", rules: dict | None = None,
+                  initial_balance: float | None = None, **param_overrides):
+    """One full-year backtest of a saved version. Returns (trades DataFrame, final balance).
+    rules: overrides for the daily rules, e.g. the file's options["compounding"]["rules"]."""
     from xautest import BrokerConfig, Engine, SimBroker
     from xautest.cli import load_strategy
     from xautest.feeds.arrays import ArrayFeed, load_cache
@@ -59,7 +61,9 @@ def run_candidate(year: int, name: str = "reaction_zone_growth", **param_overrid
     from xautest.risk import DailyRiskRules
     c = load_candidate(name)
     s = load_strategy(str(c["file"]))(**{**c["params"], **param_overrides})
-    s.risk = DailyRiskRules(**c["rules"])
+    s.risk = DailyRiskRules(**{**c["rules"], **(rules or {})})
+    if initial_balance is not None:
+        c["broker"]["initial_balance"] = initial_balance
     broker = SimBroker(BrokerConfig(**c["broker"]))
     res = Engine(s, broker, ArrayFeed(load_cache(cache_for(year_file(year))))).run()
     return trades_frame(res), broker.balance
