@@ -443,3 +443,37 @@ Selection rule (fixed first): on 2021, ≥ 250 trades, profit factor ≥ 1.10, p
   that lasts beyond the year they were tuned on; 2021's mean reversion did not repeat. Not adopted, not locked.
   A scalper would need information these price-only rules don't use (order flow, news timing) or much lower costs
   plus a real edge before costs, which none of these showed.
+
+### More trades a day, 1m entry timing, confidence score (`experiments/more_trades.py`)
+
+27 versions, 2019–2026, TP $10 intraday, $0.20, $20/day account, no stop: max 2 + stop after a win (current) /
+max 5 / max 10 (no stop after a win) × entry on the 5m confirmation (current) / 1m MACD cross / limit order
+at the swept level ("retest") × confidence off / gate 0.5 / scaled (the day's n-th trade needs a score of
+0.25 + 0.125 n). The score is the share of 4 checks on the trade's side: 1H MACD, 15m SuperTrend, today's
+closed trades not losing, last 15m candle not a news spike. New strategy options, all off by default:
+`exec_mode="m1_retest"`, `conf_base`, `conf_step`, `conf_spike`.
+
+| Version (5m entry unless noted) | Trades/day | Win rate | Net 2019–24 | Net 2025–26 | Net |
+|---|---|---|---|---|---|
+| **Current: max 2, stop after win** | 1.00 | 59.8% | +$417 | +$657 | **+$1,074** |
+| Current + confidence gate 0.5 | 1.00 | 59.9% | +$480 | +$645 | +$1,125 |
+| Max 5 or 10, no stop after win | 1.09 | 59.6% | +$466 | +$454 | +$920 |
+| Max 5 or 10 + gate 0.5 (rule's pick) | 1.09 | 59.7% | +$519 | +$440 | +$959 |
+| 1m MACD entry (best) | 1.00–1.05 | 56.4% | +$162 | +$39 | +$201 |
+| Retest limit at the level (best) | 1.00–1.03 | 58.4% | +$130 | +$96 | +$226 |
+
+- **Raising the limit hardly adds trades:** at max 10 the bot traded 1.09 times a day (1,137 days with 1 trade,
+  103 with 2, 6 with 3). With no stop, a trade ends at +$10 (median close 14:00 UTC, often after the entry
+  windows), at −$20 (account gone), or at 20:00 (46% of trades). So the holding time limits the count,
+  not the cap.
+- **The extra trades lose:** the 109 second trades after a win made −$154 (56% won). Allowing them cut
+  2025–2026 by $200.
+- **1m timing is worse:** waiting for the 1m MACD cross drops the good entries (price often leaves without
+  coming back): +$201 vs +$1,074. The retest limit fills only 420 times in 8 years.
+- **Confidence:** "scaled" never bound (identical to off: the first trade only needs 1 of 4 checks, second trades
+  are rare). The gate 0.5 helped a little in 2019–2024 (+$63 on the current version) and cost a little in 2025–26.
+- **Rule:** the pick (max 10, 5m, gate 0.5) **failed the 2025–2026 check** (+$440 vs +$657). Nothing adopted;
+  the current version stays.
+- To trade many times a day like the real account (3,580 orders/year), the trades would have to be much
+  shorter (smaller targets or a stop) or overlap (several positions at once). Both change the risk profile;
+  the real trade log would show which one the user does.

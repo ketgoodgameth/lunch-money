@@ -148,3 +148,49 @@ def test_break_even_stop_moves_once_trade_is_in_profit():
     assert p.sl == pytest.approx(p.entry_price - 1.0)
     s._break_even(Tick(DAY0 + 14 * H + 2 * M, 2990.0, 2990.2))
     assert p.sl == pytest.approx(p.entry_price - 1.0)         # never trails further
+
+
+def confidence_setup(s, macd_hist=-1.0, st_dir=-1, day_pnl=0.0, bar_range=2.0, atr=2.0):
+    s.h1_macd = Stub(ready=True, hist=macd_hist)
+    s.m15_st = Stub(ready=True, direction=st_dir)
+    s.m15_atr = Stub(ready=True, value=atr)
+    s.last15 = Bar(DAY0, 3000.0, 3000.0 + bar_range, 3000.0, 3000.0)
+    s.pnl_by_day[DAY0 // 86_400_000] = day_pnl
+
+
+def test_confidence_counts_agreeing_market_checks():
+    s = make()
+    confidence_setup(s)
+    assert s.confidence(SELL, DAY0 + 13 * H) == 1.0
+    confidence_setup(s, macd_hist=0.5, day_pnl=-20.0)           # 1H momentum against, a losing day so far
+    assert s.confidence(SELL, DAY0 + 13 * H) == 0.5
+    confidence_setup(s, bar_range=6.0)                          # 15m candle 3x ATR: news spike
+    assert s.confidence(SELL, DAY0 + 13 * H) == 0.75
+    assert s.confidence(BUY, DAY0 + 13 * H) == 0.25
+
+
+def test_each_extra_trade_needs_more_confidence():
+    s = make(conf_base=0.5, conf_step=0.25)
+    confidence_setup(s, macd_hist=0.5)                          # score 0.75
+    ts, day = DAY0 + 13 * H, DAY0 // 86_400_000
+    assert s.confident_enough(SELL, ts)                         # 1st trade needs 0.50
+    s.fills_by_day[day] = 1
+    assert s.confident_enough(SELL, ts)                         # 2nd needs 0.75
+    s.fills_by_day[day] = 2
+    assert not s.confident_enough(SELL, ts)                     # 3rd needs 1.00
+    assert make().confident_enough(BUY, ts)                     # off by default
+
+
+def test_retest_entry_rests_a_limit_at_the_level_and_cancels_past_the_wick():
+    s = make(exec_mode="m1_retest")
+    s.on_m15(Bar(DAY0 + 13 * H, 3002.0, 3008.0, 3001.0, 3003.0))
+    level, wick = s.setup.level, s.setup.wick
+    s.m5_st = Stub(direction=SELL, ready=True)
+    s.m5_macd = Stub(ret=-0.4, prev_hist=0.1, ready=True)
+    t = Tick(DAY0 + 13 * H + 20 * M, 3002.0, 3002.2)
+    s.broker.on_tick(t)
+    s.on_m5(Bar(DAY0 + 13 * H + 15 * M, 3003.0, 3003.5, 3001.8, 3002.0), t)
+    (o,) = s.orders
+    assert not s.positions and o.price == pytest.approx(level) and o.tp == pytest.approx(level - 10.0)
+    s.on_tick(Tick(DAY0 + 13 * H + 22 * M, wick + 0.1, wick + 0.3))   # price breaks the wick: idea is dead
+    assert not s.orders

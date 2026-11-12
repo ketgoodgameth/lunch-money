@@ -1,0 +1,4 @@
+{
+  "pick": "max 10 | 5m | gate 0.5",
+  "check_2025_26": false
+}

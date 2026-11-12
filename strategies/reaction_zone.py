@@ -12,6 +12,11 @@
   exit             take profit tp_usd per ounce; stop loss none (sl_mode="none": the $20/day account stop-out is
                    the only limit) or just beyond the rejection wick (sl_mode="wick").
   break-even       be_trigger > 0: once a trade is that many $/oz in profit, a stop goes to entry + be_offset.
+  confidence       conf_base / conf_step > 0: a 0..1 score of four market checks (see confidence()); the day's
+                   n-th trade (n = 0, 1, ...) needs a score of at least conf_base + n x conf_step, so a market that
+                   agrees with the setup allows more trades and a choppy or spiking one allows fewer or none.
+  1m retest        exec_mode="m1_retest": after the 5m confirmation, a limit order at the swept level instead of
+                   a market order, i.e. the entry waits for price to come back to the wick zone.
   when             entries only inside `sessions` (UTC windows, e.g. "12:30-16:00" for the New York open);
                    anything open is closed at flat_hour UTC.
 
@@ -114,6 +119,9 @@ class ReactionZone(Strategy):
         "tp_atr": 0.0,
         "be_trigger": 0.0,
         "be_offset": 0.0,
+        "conf_base": 0.0,      # confidence needed for the day's first trade (0 = off)
+        "conf_step": 0.0,      # extra confidence needed for each further trade that day
+        "conf_spike": 2.5,     # a 15m candle bigger than this x the 15m ATR counts as a news spike
     }
 
     def on_start(self):
@@ -128,8 +136,13 @@ class ReactionZone(Strategy):
         self.windows = parse_sessions(p.sessions)
         self.setup: Setup | None = None
         self._be_done: set[int] = set()
+        self.m15_st, self.m15_atr, self.last15 = SuperTrend(10, 3.0), ATR(14), None
+        self.fills_by_day: dict[int, int] = {}
+        self.pnl_by_day: dict[int, float] = {}
+        self.pending = None    # setup behind a resting retest order
         self.stats = {"h1_bars": 0, "rejections": 0, "via_sweep": 0, "via_fvg": 0, "confirmed": 0,
-                      "executed": 0, "expired": 0, "invalidated": 0, "outside_session": 0}
+                      "executed": 0, "expired": 0, "invalidated": 0, "outside_session": 0,
+                      "low_confidence": 0, "retest_orders": 0}
 
     # ---------------------------------------------------------------- routing
     def on_tick(self, t):
@@ -155,6 +168,12 @@ class ReactionZone(Strategy):
                 self.setup = None; self.stats["expired"] += 1
             elif (s.side == SELL and t.bid > s.wick) or (s.side == BUY and t.bid < s.wick):
                 self.setup = None; self.stats["invalidated"] += 1
+        if self.pending is not None and self.orders:
+            s = self.pending
+            if (s.side == SELL and t.bid > s.wick) or (s.side == BUY and t.bid < s.wick):
+                self.cancel_all(); self.pending = None
+        elif self.pending is not None and not self.orders:
+            self.pending = None
         if self.p.be_trigger > 0:
             self._break_even(t)
         if (self.positions or self.orders) and (t.ts % 86_400_000) >= self.p.flat_hour * 3_600_000:
@@ -171,6 +190,41 @@ class ReactionZone(Strategy):
             if gain >= p.be_trigger:
                 self._be_done.add(pos.id)
                 self.modify(pos, sl=pos.entry_price + (p.be_offset if pos.side == BUY else -p.be_offset))
+
+    # ---------------------------------------------------------------- confidence: how much to trade today
+    def confidence(self, side: int, ts: int) -> float:
+        """0..1, the share of four market checks that agree with taking this trade now:
+        1H MACD histogram on the trade's side; 15m SuperTrend on the trade's side; today's closed trades not
+        losing; the last 15m candle not a news spike (range <= conf_spike x 15m ATR)."""
+        d = 1 if side == BUY else -1
+        checks = [
+            self.h1_macd.ready and self.h1_macd.hist is not None and d * self.h1_macd.hist > 0,
+            self.m15_st.ready and self.m15_st.direction == d,
+            self.pnl_by_day.get(ts // 86_400_000, 0.0) >= 0,
+            self.last15 is not None and self.m15_atr.ready and
+            (self.last15.high - self.last15.low) <= self.p.conf_spike * self.m15_atr.value,
+        ]
+        return sum(bool(c) for c in checks) / len(checks)
+
+    def confident_enough(self, side: int, ts: int) -> bool:
+        p = self.p
+        if p.conf_base <= 0 and p.conf_step <= 0:
+            return True
+        n = self.fills_by_day.get(ts // 86_400_000, 0)
+        if self.confidence(side, ts) + 1e-9 >= p.conf_base + p.conf_step * n:
+            return True
+        self.stats["low_confidence"] += 1
+        return False
+
+    def on_fill(self, order, position):
+        day = position.entry_ts // 86_400_000
+        self.fills_by_day[day] = self.fills_by_day.get(day, 0) + 1
+        if self.pending is not None:
+            self.pending = None
+
+    def on_trade(self, trade):
+        day = trade.entry_ts // 86_400_000
+        self.pnl_by_day[day] = self.pnl_by_day.get(day, 0.0) + trade.net_pnl
 
     def bias(self) -> int:
         if not self.h1_st.ready:
@@ -222,6 +276,7 @@ class ReactionZone(Strategy):
                         self._new_setup(BUY, level, bar.low, bar.ts, how)
         hist.append((bar.high, bar.low, rsi))
         self.fvg_15.update(bar)
+        self.m15_st.update(bar); self.m15_atr.update(bar); self.last15 = bar
 
     def _new_setup(self, side, level, wick, bar_ts, how):
         close_ts = bar_ts + 15 * MIN
@@ -246,10 +301,12 @@ class ReactionZone(Strategy):
         if ok:
             s.confirmed_ts = bar.ts + 5 * MIN
             self.stats["confirmed"] += 1
-            if self.p.exec_mode == "m5" and t is not None:
+            if self.p.exec_mode in ("m5", "m1_retest") and t is not None:
                 inside = bar.close < s.level if s.side == SELL else bar.close > s.level
-                if inside:
+                if inside and self.p.exec_mode == "m5":
                     self._execute(s, t)
+                elif inside:
+                    self._place_retest(s, t)
 
     # ---------------------------------------------------------------- 1m: execution on the crossover
     def on_m1(self, bar, t):
@@ -268,6 +325,32 @@ class ReactionZone(Strategy):
             return
         self._execute(s, t)
 
+    def _ok_to_enter(self, s, t) -> bool:
+        if self.positions or self.orders:
+            return False
+        tod = t.ts % 86_400_000
+        if not any(a <= tod < b for a, b in self.windows):
+            self.stats["outside_session"] += 1
+            return False
+        if t.spread > self.p.max_spread:
+            return False
+        return self.confident_enough(s.side, t.ts)
+
+    def _place_retest(self, s, t):
+        """1m entry at the level: a limit order where the rejection happened, waiting for price to come back
+        to it (a better price than chasing the 5m close). Lives until the setup expires or the wick breaks."""
+        if not self._ok_to_enter(s, t):
+            return
+        p = self.p
+        if s.side == SELL:
+            o = self.sell_limit(s.level, p.lots, tp=s.level - p.tp_usd, expiry_ms=s.expires_ts)
+        else:
+            o = self.buy_limit(s.level + t.spread, p.lots, tp=s.level + t.spread + p.tp_usd, expiry_ms=s.expires_ts)
+        if o is not None:
+            self.stats["retest_orders"] += 1
+            self.stats["executed"] += 1
+            self.pending, self.setup = s, None
+
     def scaled_size(self) -> tuple[float, float]:
         """(lots, stop-out distance in USD/oz) for a fixed dollar risk at stop_atr_frac x daily ATR."""
         p = self.p
@@ -277,15 +360,9 @@ class ReactionZone(Strategy):
         return lots, p.account_risk / (lots * 100)
 
     def _execute(self, s, t):
-        if self.positions or self.orders:
-            return
-        tod = t.ts % 86_400_000
-        if not any(a <= tod < b for a, b in self.windows):
-            self.stats["outside_session"] += 1
+        if not self._ok_to_enter(s, t):
             return
         p = self.p
-        if t.spread > p.max_spread:
-            return
         lots, tp_dist = p.lots, p.tp_usd
         if p.size_mode == "atr":
             if not self.datr.ready:
