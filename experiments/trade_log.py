@@ -27,12 +27,12 @@ from xautest.bars import BarBuilder                         # noqa: E402
 
 CONTRACT = 100.0
 ALIASES = {
-    "open_time": ["entry_time", "open time", "opening time", "time", "open_time", "opened", "open date"],
-    "close_time": ["exit_time", "close time", "closing time", "close_time", "closed", "close date"],
+    "open_time": ["entry_time", "opening_time_utc", "open time", "opening time", "time", "open_time", "opened", "open date"],
+    "close_time": ["exit_time", "closing_time_utc", "close time", "closing time", "close_time", "closed", "close date"],
     "side": ["side", "type", "direction", "order type", "deal type"],
     "lots": ["lots", "volume", "size", "lot", "volume (lots)"],
-    "open_price": ["entry_price", "open price", "opening price", "price", "open_price"],
-    "close_price": ["exit_price", "close price", "closing price", "close_price"],
+    "open_price": ["entry_price", "opening_price", "open price", "opening price", "price", "open_price"],
+    "close_price": ["exit_price", "closing_price", "close price", "closing price", "close_price"],
     "profit": ["net_pnl", "profit", "p/l", "pnl", "profit (usd)", "net profit"],
     "symbol": ["symbol", "instrument"],
     "sl": ["initial_stop", "s/l", "sl", "stop loss"],

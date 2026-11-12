@@ -1,0 +1,8 @@
+{
+  "pick": null,
+  "best_per_entry": {
+    "market": "market tp3 sl5 hold10 trade",
+    "pullback": "pullback tp3 sl5 hold10 trade",
+    "m1_macd": "m1_macd tp3 sl5 hold10 trade"
+  }
+}

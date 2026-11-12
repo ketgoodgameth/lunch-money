@@ -7,6 +7,7 @@
 | **Reaction zone, wick ≥ 30%** (your method, rule-based) | `results/candidates/reaction_zone_wick30.json` | **Most promising, saved.** Clean, locked tests: 2020 +$123 PASS, 2021 +$140 PASS, 2019 −$23 narrow FAIL (+$12 before costs). 2019–2026: 6 of 8 years positive, about +$1,130 (+$1,074 in full-year runs with MT5-style exact take-profit fills). Settings map: all 48 neighbouring settings positive over 2021–2026. Volatility-scaled sizing rejected. 2018 test locked, waiting for data. |
 | New York opening-range breakout, half-range stop | `results/candidates/ny_breakout_half_stop.json` | Weakened. +$837 over 2022–2026 but **failed the clean 2021 test (−$361)**. |
 | Scalping bot (fade / breakout / pullback, 1–15 min bars) | `strategies/scalper.py` | **Rejected.** Built on 2021 (most stable year); round-2 pick +$110 in 2021, then lost in all 7 other years (−$560). |
+| Direction-filtered scalps (reaction zone picks the side) | `strategies/bias_scalp.py` | **Rejected.** All 72 versions lost in every year 2019–2026. The direction is worth about +$0.04/oz per scalp (flipped versions lose more in every year), but the $0.20 spread is 5× that. |
 
 All tests use real Dukascopy ticks (2022–2025), the simulated broker in `xautest/`, and the same rules:
 $10 risk per trade, stop after the first win, max 2 trades, −$20 daily cap enforced by a $20/day account
@@ -477,3 +478,31 @@ closed trades not losing, last 15m candle not a news spike. New strategy options
 - To trade many times a day like the real account (3,580 orders/year), the trades would have to be much
   shorter (smaller targets or a stop) or overlap (several positions at once). Both change the risk profile;
   the real trade log would show which one the user does.
+
+### Direction-filtered scalps (`strategies/bias_scalp.py`, `experiments/bias_scalp.py`, 2019–2026)
+
+Idea from the real trade history (kept local, not in the repo): fast trades won most often, and trades on the
+reaction-zone strategy's side did better than trades against it. So the strategy picks the side, and a scalper
+trades only that side, from the strategy's entry (no look-ahead) while its trade is open ("trade") or until
+20:00 UTC ("day"). The scalps run on their own $20/day account, 0.01 lots, $0.20 spread, 100 ms, 30 s between scalps,
+no trade limit. Grid (72 versions): entry at market / on a 1m pullback candle / on a 1m MACD cross × TP $1/2/3
+× stop $2/5 × max hold 2/10 min × window trade/day. Rule fixed before running: 2019–2024, ≥300 trades, profit in
+≥4 of 6 years, highest net; checks: 2025–2026 positive, and the side-flipped control must be worse.
+
+| Best of each entry type ($0.20 spread) | Trades/day | Win rate | Per trade | Net 2019–24 | Net 2025–26 |
+|---|---|---|---|---|---|
+| 1m MACD, TP $3, stop $5, hold 10, trade window | 12.7 | 42.3% | −$0.20 | −$2,698 | −$230 |
+| … same, side flipped | | 41.1% | −$0.24 | −$3,120 | −$494 |
+| Pullback, TP $3, stop $5, hold 10, trade window | 29.7 | 43.4% | −$0.17 | −$5,913 | −$355 |
+| … same, side flipped | | 41.7% | −$0.23 | −$7,444 | −$1,358 |
+| Market, TP $3, stop $5, hold 10, trade window | 32.5 | 42.9% | −$0.19 | −$6,984 | −$551 |
+| … same, side flipped | | 41.6% | −$0.24 | −$8,564 | −$1,836 |
+
+- **Every one of the 72 versions lost in every year**, so nothing passes the rule. Per scalp they lose about the
+  spread ($0.17–0.21 at 0.01 lots, where $ = $/oz).
+- **The direction is real but small:** each flipped control loses more in all 8 years, about $0.04–0.06/oz per
+  scalp. That is the strategy's edge spread over many tiny trades: a quarter of the cost of one spread.
+- **Costs:** with a $0.30 spread or $0.05 slippage the market version loses another ~$3,000. A wider target
+  does not help: the 2 and 10 minute hold limits end most scalps before the target.
+- **Conclusion:** the strategy's side is useful as a filter for discretionary trading (don't trade against
+  it once it has entered), but it is not an edge a mechanical scalper can pay the spread with. **Rejected.**

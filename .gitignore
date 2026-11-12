@@ -13,3 +13,11 @@ results/**/equity.csv
 
 # macOS
 .DS_Store
+
+# Real account trade history (private, keep local)
+results/trade_history_replay/
+results/trade_log/
+results/trade_log.log
+results/trade_history_patterns.log
+# Too big for GitHub (176 MB); regenerate with experiments/bias_scalp.py run
+results/bias_scalp/trades.csv.gz
