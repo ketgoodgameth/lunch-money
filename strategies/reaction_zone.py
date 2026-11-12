@@ -122,6 +122,13 @@ class ReactionZone(Strategy):
         "conf_base": 0.0,      # confidence needed for the day's first trade (0 = off)
         "conf_step": 0.0,      # extra confidence needed for each further trade that day
         "conf_spike": 2.5,     # a 15m candle bigger than this x the 15m ATR counts as a news spike
+        "day_cap": 0.0,        # the day's maximum loss in $ (used by trade_stop_usd / recover; 0 = those are off)
+        "trade_stop_usd": 0.0, # stop loss that caps one trade's loss at this many $ (never more than what is left)
+        "recover": "off",      # after a losing trade: "target" = same size, take profit where the day is back to
+                               # zero; "size" = normal take profit, size raised so that it brings the day to zero
+        "recover_max_tp": 30.0,   # "target": never aim further than this ($/oz)
+        "recover_min_room": 5.0,  # "size": keep at least this much adverse move ($/oz) inside what is left
+        "scratch_after": 0.0,  # once a trade has been this many $/oz under water, move its TP to break-even
     }
 
     def on_start(self):
@@ -136,6 +143,7 @@ class ReactionZone(Strategy):
         self.windows = parse_sessions(p.sessions)
         self.setup: Setup | None = None
         self._be_done: set[int] = set()
+        self._scratched: set[int] = set()
         self.m15_st, self.m15_atr, self.last15 = SuperTrend(10, 3.0), ATR(14), None
         self.fills_by_day: dict[int, int] = {}
         self.pnl_by_day: dict[int, float] = {}
@@ -176,6 +184,8 @@ class ReactionZone(Strategy):
             self.pending = None
         if self.p.be_trigger > 0:
             self._break_even(t)
+        if self.p.scratch_after > 0:
+            self._scratch(t)
         if (self.positions or self.orders) and (t.ts % 86_400_000) >= self.p.flat_hour * 3_600_000:
             self.cancel_all()
             self.close_all("eod")
@@ -190,6 +200,37 @@ class ReactionZone(Strategy):
             if gain >= p.be_trigger:
                 self._be_done.add(pos.id)
                 self.modify(pos, sl=pos.entry_price + (p.be_offset if pos.side == BUY else -p.be_offset))
+
+    def _scratch(self, t):
+        """Once a trade has been scratch_after $/oz under water, its take profit moves to the entry price: the
+        aim becomes getting out at break-even (it never moves again)."""
+        for pos in self.positions:
+            if pos.id in self._scratched:
+                continue
+            loss = (pos.entry_price - t.bid) if pos.side == BUY else (t.ask - pos.entry_price)
+            if loss >= self.p.scratch_after:
+                self._scratched.add(pos.id)
+                self.modify(pos, tp=pos.entry_price)
+
+    def day_plan(self, ts: int, lots: float, tp_dist: float) -> tuple[float, float, float | None]:
+        """(lots, take-profit distance, stop distance or None) under the day's loss cap: a per-trade stop that
+        never risks more than what is left of the cap, and, on a losing day, a trade built to bring the day
+        back to zero."""
+        p = self.p
+        if p.day_cap <= 0:
+            return lots, tp_dist, None
+        lost = -min(self.pnl_by_day.get(ts // 86_400_000, 0.0), 0.0)
+        left = max(p.day_cap - lost, 0.0)
+        if lost > 0 and p.recover == "target":
+            tp_dist = min(lost / (lots * 100) + 0.10, p.recover_max_tp)
+        elif lost > 0 and p.recover == "size":
+            need = -(-lost // (tp_dist * 100 * 0.01)) * 0.01           # lots whose normal TP wins back the loss
+            room = int(left / (p.recover_min_room * 100) / 0.01 + 1e-9) * 0.01
+            lots = round(max(lots, min(need, room)), 2)
+        stop = None
+        if p.trade_stop_usd > 0:
+            stop = min(p.trade_stop_usd, left) / (lots * 100)
+        return lots, tp_dist, stop
 
     # ---------------------------------------------------------------- confidence: how much to trade today
     def confidence(self, side: int, ts: int) -> float:
@@ -374,13 +415,18 @@ class ReactionZone(Strategy):
             if not self.datr.ready:
                 return
             tp_dist = p.tp_atr * self.datr.value
+        lots, tp_dist, stop_dist = self.day_plan(t.ts, lots, tp_dist)
         if s.side == SELL:
             tp = t.bid - tp_dist
             sl = s.wick + t.spread + p.sl_buffer if p.sl_mode == "wick" else None
+            if stop_dist is not None:
+                sl = t.bid + stop_dist
             order = self.sell(lots, sl=sl, tp=tp)
         else:
             tp = t.ask + tp_dist
             sl = s.wick - p.sl_buffer if p.sl_mode == "wick" else None
+            if stop_dist is not None:
+                sl = t.ask - stop_dist
             order = self.buy(lots, sl=sl, tp=tp)
         if order is not None:
             self.stats["executed"] += 1

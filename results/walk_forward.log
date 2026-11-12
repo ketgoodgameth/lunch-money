@@ -1,0 +1,61 @@
+every fixed setting, net $ by year (2019-2026)
+                      2019   2020   2021   2022   2023   2024   2025   2026   total
+setting                                                                           
+wick 25% | TP $12.5 -68.0  188.0   35.0  241.0 -129.0  -26.0  535.0  366.0  1142.0
+wick 30% | TP $10   -64.0   84.0  132.0  199.0  -67.0  133.0  366.0  291.0  1074.0
+wick 25% | TP $10   -82.0  124.0   86.0  235.0 -101.0    3.0  459.0  331.0  1055.0
+wick 30% | TP $12.5 -54.0  127.0   98.0  199.0 -102.0  108.0  357.0  279.0  1012.0
+wick 25% | TP $15   -57.0  155.0   33.0  254.0 -121.0  -28.0  541.0  206.0   983.0
+wick 30% | TP $15   -44.0  132.0   95.0  208.0  -97.0  116.0  375.0  101.0   886.0
+wick 35% | TP $10   -64.0  121.0   97.0  245.0  -47.0   78.0  248.0  122.0   799.0
+wick 30% | TP $7.5  -51.0  -18.0   61.0  161.0    2.0   75.0  333.0  159.0   721.0
+wick 35% | TP $12.5 -53.0  163.0   64.0  239.0  -90.0   43.0  270.0   77.0   713.0
+wick 25% | TP $7.5  -56.0    2.0   18.0  179.0  -34.0  -70.0  412.0  184.0   635.0
+wick 35% | TP $15   -43.0  159.0   60.0  244.0  -92.0   50.0  302.0  -98.0   583.0
+wick 35% | TP $7.5  -57.0   30.0   30.0  180.0   11.0   29.0  234.0   49.0   507.0
+wick 40% | TP $10   -52.0   16.0  145.0  259.0  -43.0  -24.0  125.0   12.0   438.0
+wick 40% | TP $12.5 -40.0   58.0  135.0  266.0  -96.0  -94.0  158.0   37.0   424.0
+wick 40% | TP $15   -35.0   62.0  130.0  276.0  -88.0 -111.0  211.0  -88.0   358.0
+wick 30% | TP $5    -47.0  -78.0    5.0  117.0    7.0  -50.0  175.0  135.0   263.0
+wick 25% | TP $5    -30.0  -66.0  -41.0  163.0  -13.0 -156.0  232.0  169.0   258.0
+wick 40% | TP $7.5  -63.0  -53.0   66.0  192.0   -7.0  -47.0  155.0  -32.0   211.0
+wick 35% | TP $5    -67.0  -22.0  -10.0  170.0   10.0  -69.0  109.0   55.0   176.0
+wick 40% | TP $5    -61.0  -78.0   43.0  191.0  -10.0 -110.0   81.0    1.0    57.0 
+
+scored on 2021-01 to 2026-10
+                                                 2021  2022  2023  2024  2025  2026  total  years + months +  worst drawdown switches
+version                                                                                                                             
+fixed: current (wick 30% | TP $10)               132   199   -67   133   366   291   1054        5      69%            -184         
+fixed: average of all 20                          64   211   -55    -8   284   118    614        4      64%            -140         
+fixed: best with hindsight (wick 30% | TP $10)   132   199   -67   133   366   291   1054        5      69%            -184         
+perfect pick every month (hindsight)             366   425   275   290   794   565   2714        6      83%             -39         
+re-pick every 1 mo on last 6 mo                   64   257   -99    96   433   311   1061        5      63%            -175       30
+re-pick every 1 mo on last 12 mo                  36   243  -129   100   414   299    963        5      66%            -190       18
+re-pick every 1 mo on last 24 mo                  29   222  -101    59   312   356    877        5      61%            -190       24
+re-pick every 3 mo on last 6 mo                   79   228   -37   105   476   289   1139        5      69%            -121       16
+re-pick every 3 mo on last 12 mo (primary)        45   259  -110   104   410   289    996        5      66%            -174       11
+re-pick every 3 mo on last 24 mo                  40   221   -28    52   338   356    978        5      64%            -127       12
+re-pick every 6 mo on last 6 mo                   61   210  -111    90   476   289   1013        5      69%            -172       11
+re-pick every 6 mo on last 12 mo                  45   259  -111    96   379   289    958        5      66%            -174        9
+re-pick every 6 mo on last 24 mo                  41   203   -68    37   345   289    847        5      64%            -179       10 
+
+primary version $+996 vs current fixed $+1054: does not beat it; it would rank 4 of 20 among fixed settings
+9 of 9 walk-forward versions beat the average fixed setting ($+614)
+verdict: self-adjustment does not add anything here
+
+primary version's picks:
+ 2021-01    wick 25% | TP $12.5
+2021-07    wick 30% | TP $12.5
+2022-01      wick 40% | TP $10
+2023-01      wick 40% | TP $15
+2023-07       wick 35% | TP $5
+2023-10     wick 35% | TP $7.5
+2024-04     wick 30% | TP $7.5
+2024-07      wick 30% | TP $10
+2025-04    wick 30% | TP $12.5
+2025-10    wick 25% | TP $12.5
+2026-01      wick 25% | TP $15
+2026-07    wick 25% | TP $12.5
+rank correlation, last 12 mo vs next 3 mo across settings: mean +0.31 (81% of periods positive, 27 periods)
+rank correlation, last 24 mo vs next 6 mo across settings: mean +0.15 (64% of periods positive, 11 periods)
+rank correlation, last 24 mo vs next 12 mo across settings: mean +0.03 (60% of periods positive, 5 periods)

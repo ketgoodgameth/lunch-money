@@ -1,0 +1,73 @@
+2018 data: 35,920,345 ticks, 2018-01-01 23:00:00.174000+00:00 -> 2018-12-31 21:59:48.490000+00:00, out-of-order 0, gold 1,160-1,366 (-1.6%), weekdays without ticks: ['03-30']
+caching xauusd-tick-2018-01-01-2019-01-01.csv...
+2018: 12 backtests on 8 workers
+  12/12 (52s)
+  done in 52s
+2018: 12 backtests on 8 workers
+  12/12 (56s)
+  done in 56s
+2018: 12 backtests on 8 workers
+  12/12 (74s)
+  done in 74s
+2018: 12 backtests on 8 workers
+  12/12 (74s)
+  done in 74s
+2018: 12 backtests on 8 workers
+  12/12 (67s)
+  done in 67s
+2018: 12 backtests on 8 workers
+  12/12 (55s)
+  done in 55s
+2018: 12 backtests on 8 workers
+  12/12 (56s)
+  done in 56s
+2018: 12 backtests on 8 workers
+  12/12 (54s)
+  done in 55s
+2018: 12 backtests on 8 workers
+  12/12 (55s)
+  done in 55s
+2018: 12 backtests on 8 workers
+  12/12 (55s)
+  done in 56s
+                                variant                  costs  trades     net     Q1      Q2     Q3     Q4  q_positive  win_rate  avg_R  tstat  max_dd  long_net  short_net
+       1:3 held, volatility-scaled size              zero cost     114  142.34 -15.85  -20.32  69.51 109.00           2      28.1  0.125   0.74  -90.00    -69.86     212.20
+       1:3 held, volatility-scaled size                  $0.20     114   61.81 -56.51  -60.18  69.51 109.00           2      26.3  0.054   0.33 -146.52    -69.86     131.67
+       1:3 held, volatility-scaled size $0.20 + $0.10 slippage     115  -37.95 -58.91  -61.98  26.26  56.69           2      24.3 -0.033  -0.21 -173.81    -74.56      36.61
+       1:5 held, volatility-scaled size              zero cost      94  169.32 -58.78  -40.43  89.68 178.85           2      20.2  0.180   0.74 -188.89   -130.08     299.40
+       1:5 held, volatility-scaled size                  $0.20      94  108.86 -59.38 -110.29  89.68 188.85           2      19.1  0.116   0.48 -219.49   -130.08     238.94
+       1:5 held, volatility-scaled size $0.20 + $0.10 slippage      95   33.35 -60.88 -110.99  87.18 118.04           2      17.9  0.035   0.15 -220.39   -132.28     165.63
+              1:3 held, fixed 0.01 lots              zero cost      36  210.11  63.69    8.15  61.73  76.54           4      41.7  0.584   1.79  -30.00     76.81     133.31
+              1:3 held, fixed 0.01 lots                  $0.20      38  191.39  53.49    7.95  53.62  76.34           4      39.5  0.504   1.62  -40.00     76.60     114.79
+              1:3 held, fixed 0.01 lots $0.20 + $0.10 slippage      38  189.39  52.89    7.55  53.12  75.84           4      39.5  0.498   1.61  -40.00     75.91     113.49
+              1:5 held, fixed 0.01 lots              zero cost      25   25.59 -68.85   40.63  21.71  32.09           3      28.0  0.102   0.25  -98.85    -26.75      52.34
+              1:5 held, fixed 0.01 lots                  $0.20      26   16.87 -69.05   40.43  13.60  31.90           3      26.9  0.065   0.16  -99.05    -27.15      44.03
+              1:5 held, fixed 0.01 lots $0.20 + $0.10 slippage      26   15.77 -69.25   40.13  13.30  31.60           3      26.9  0.061   0.15  -99.25    -27.66      43.43
+           high win rate: TP $7.5, held              zero cost      72   72.21  20.39    0.57  42.51   8.74           4      73.6  0.100   0.74  -74.98     21.29      50.92
+           high win rate: TP $7.5, held                  $0.20      74   86.62  20.19   15.38  42.51   8.54           4      74.3  0.117   0.89  -74.98     28.59      58.02
+           high win rate: TP $7.5, held $0.20 + $0.10 slippage      74   80.52  18.09   13.88  41.41   7.14           4      74.3  0.109   0.83  -75.58     25.60      54.92
+       high win rate: TP $7.5, intraday              zero cost     153   -2.69   1.04   14.07 -17.56  -0.23           2      47.7 -0.002  -0.04  -44.04    -27.79      25.11
+       high win rate: TP $7.5, intraday                  $0.20     153  -27.49  -4.16    7.47 -23.16  -7.63           1      45.8 -0.018  -0.41  -56.34    -40.99      13.51
+       high win rate: TP $7.5, intraday $0.20 + $0.10 slippage     153  -55.09 -10.46    0.27 -29.36 -15.53           1      41.8 -0.036  -0.81  -77.44    -55.39       0.31
+        high win rate: TP $10, intraday              zero cost     153   -1.31  -2.98    7.20  -7.94   2.41           2      47.1 -0.001  -0.02  -48.59    -23.97      22.65
+        high win rate: TP $10, intraday                  $0.20     153  -28.71  -9.18   -0.20 -13.74  -5.59           0      45.1 -0.019  -0.41  -59.65    -38.36       9.65
+        high win rate: TP $10, intraday $0.20 + $0.10 slippage     153  -57.61 -15.98   -7.80 -20.04 -13.79           0      41.2 -0.038  -0.83  -82.05    -53.36      -4.25
+$50 a day: 0.02 lots, no stop (primary)              zero cost     153   -1.05  -4.40   14.40 -15.87   4.82           2      47.1 -0.001  -0.01  -97.19    -46.37      45.31
+$50 a day: 0.02 lots, no stop (primary)                  $0.20     153  -56.25 -17.20   -0.40 -27.47 -11.18           0      45.1 -0.037  -0.41 -119.31    -75.56      19.31
+$50 a day: 0.02 lots, no stop (primary) $0.20 + $0.10 slippage     153 -114.45 -31.20  -15.60 -40.07 -27.58           0      41.2 -0.075  -0.82 -164.11   -105.96      -8.49
+          $50 a day: 0.01 lots, no stop              zero cost     153   -0.53  -2.20    7.20  -7.94   2.41           2      47.1 -0.000  -0.01  -48.59    -23.18      22.65
+          $50 a day: 0.01 lots, no stop                  $0.20     153  -28.13  -8.60   -0.20 -13.74  -5.59           0      45.1 -0.018  -0.41  -59.65    -37.77       9.65
+          $50 a day: 0.01 lots, no stop $0.20 + $0.10 slippage     153  -57.23 -15.60   -7.80 -20.04 -13.79           0      41.2 -0.037  -0.82  -82.05    -52.97      -4.25
+         $50 a day: 0.01 lots, $25 stop              zero cost     153   -0.53  -2.20    7.20  -7.94   2.41           2      47.1 -0.000  -0.01  -48.59    -23.18      22.65
+         $50 a day: 0.01 lots, $25 stop                  $0.20     153  -28.13  -8.60   -0.20 -13.74  -5.59           0      45.1 -0.018  -0.41  -59.65    -37.77       9.65
+         $50 a day: 0.01 lots, $25 stop $0.20 + $0.10 slippage     153  -57.23 -15.60   -7.80 -20.04 -13.79           0      41.2 -0.037  -0.82  -82.05    -52.97      -4.25
+1:3 held, volatility-scaled size: PASS (+61.81 at $0.20)
+1:5 held, volatility-scaled size: PASS (+108.86 at $0.20)
+1:3 held, fixed 0.01 lots: PASS (+191.39 at $0.20)
+1:5 held, fixed 0.01 lots: PASS (+16.87 at $0.20)
+high win rate: TP $7.5, held: PASS (+86.62 at $0.20)
+high win rate: TP $7.5, intraday: FAIL (-27.49 at $0.20)
+high win rate: TP $10, intraday: FAIL (-28.71 at $0.20)
+$50 a day: 0.02 lots, no stop (primary): FAIL (-56.25 at $0.20)
+$50 a day: 0.01 lots, no stop: FAIL (-28.13 at $0.20)
+$50 a day: 0.01 lots, $25 stop: FAIL (-28.13 at $0.20)

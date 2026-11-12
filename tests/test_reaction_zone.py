@@ -194,3 +194,45 @@ def test_retest_entry_rests_a_limit_at_the_level_and_cancels_past_the_wick():
     assert not s.positions and o.price == pytest.approx(level) and o.tp == pytest.approx(level - 10.0)
     s.on_tick(Tick(DAY0 + 13 * H + 22 * M, wick + 0.1, wick + 0.3))   # price breaks the wick: idea is dead
     assert not s.orders
+
+
+def test_day_plan_caps_each_trade_and_never_risks_more_than_what_is_left():
+    s = make(day_cap=50.0, trade_stop_usd=25.0, lots=0.02)
+    ts, day = DAY0 + 13 * H, DAY0 // 86_400_000
+    assert s.day_plan(ts, 0.02, 10.0) == (0.02, 10.0, pytest.approx(12.5))      # $25 at 0.02 lots = $12.5/oz
+    s.pnl_by_day[day] = -40.0
+    assert s.day_plan(ts, 0.02, 10.0)[2] == pytest.approx(5.0)                  # only $10 left
+    assert make().day_plan(ts, 0.01, 10.0) == (0.01, 10.0, None)                # off by default
+
+
+def test_recover_by_target_aims_for_break_even_at_the_same_size():
+    s = make(day_cap=50.0, trade_stop_usd=25.0, recover="target", lots=0.01)
+    ts, day = DAY0 + 13 * H, DAY0 // 86_400_000
+    s.pnl_by_day[day] = -25.0
+    lots, tp, stop = s.day_plan(ts, 0.01, 10.0)
+    assert lots == 0.01 and tp == pytest.approx(25.1) and stop == pytest.approx(25.0)
+    s.pnl_by_day[day] = -45.0
+    assert s.day_plan(ts, 0.01, 10.0)[1] == 30.0                                # capped by recover_max_tp
+
+
+def test_recover_by_size_raises_lots_within_what_is_left():
+    s = make(day_cap=50.0, trade_stop_usd=25.0, recover="size", lots=0.01)
+    ts, day = DAY0 + 13 * H, DAY0 // 86_400_000
+    s.pnl_by_day[day] = -25.0
+    lots, tp, stop = s.day_plan(ts, 0.01, 10.0)
+    assert lots == 0.03 and tp == 10.0                                          # 0.03 x $10 = $30 >= $25 lost
+    assert stop == pytest.approx(25.0 / 3)                                      # the $25 left, at 0.03 lots
+    s.pnl_by_day[day] = -45.0                                                   # $5 left: room for 0.01 lots only
+    assert s.day_plan(ts, 0.01, 10.0)[0] == 0.01
+
+
+def test_scratch_moves_the_take_profit_to_break_even_after_a_drawdown():
+    s = make(scratch_after=5.0)
+    s.on_m15(Bar(DAY0 + 13 * H, 3002.0, 3008.0, 3001.0, 3003.0))
+    run_to_entry(s)
+    (p,) = s.positions
+    tp0 = p.tp
+    s._scratch(Tick(DAY0 + 14 * H, 3005.0, 3005.2))            # $3.2 against a sell: not yet
+    assert p.tp == tp0
+    s._scratch(Tick(DAY0 + 14 * H + M, 3006.8, 3007.0))        # $5 against: aim for break-even
+    assert p.tp == pytest.approx(p.entry_price)

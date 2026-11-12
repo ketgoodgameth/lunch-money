@@ -38,6 +38,23 @@ Everything else stays at the defaults: 0.01 lots, $20 daily account, max 2 order
 - After a few weeks of demo, export the demo's ticks and trades; `experiments/trade_log.py` can compare
   them with a Python replay of the same days.
 
+## Measuring slippage and delay (EA v1.10)
+
+Every entry and exit also writes a `fill` row to the log: the price on screen when the order was sent, the
+price it filled at, the difference (slip, $/oz; above zero is a worse fill), how long the order took, and the
+spread. To read them:
+
+```bash
+.venv/bin/python experiments/demo_slippage.py
+```
+
+It shows average and worst slippage for entries, closes and take profits, the real spread at entry, and what
+the 2019–2026 backtest makes at that slippage (from `results/execution_costs`). Aim for 30+ fills, about six
+weeks, before trusting the numbers.
+
+A demo fills at the price on screen more often than a real account does, so demo slippage is a lower bound.
+The spread and the delay it measures are real.
+
 Server time: entry windows are in UTC. The EA measures the broker's clock itself (`InpServerClock = Auto`)
 and shows it on the chart (e.g. `server UTC+0.0`). Exness runs on UTC; MetaQuotes-Demo, which this MT5 is
 logged into now, runs on Athens time (UTC+2/+3). In the Strategy Tester the clock can't be measured, so Auto

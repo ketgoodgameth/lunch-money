@@ -4,7 +4,7 @@
 
 | Candidate | Settings | Status |
 |---|---|---|
-| **Reaction zone, wick ≥ 30%** (your method, rule-based) | `results/candidates/reaction_zone_wick30.json` | **Most promising, saved.** Clean, locked tests: 2020 +$123 PASS, 2021 +$140 PASS, 2019 −$23 narrow FAIL (+$12 before costs). 2019–2026: 6 of 8 years positive, about +$1,130 (+$1,074 in full-year runs with MT5-style exact take-profit fills). Settings map: all 48 neighbouring settings positive over 2021–2026. Volatility-scaled sizing rejected. 2018 test locked, waiting for data. |
+| **Reaction zone, wick ≥ 30%** (your method, rule-based) | `results/candidates/reaction_zone_wick30.json` | **Most promising, saved.** Clean, locked tests: 2020 +$123 PASS, 2021 +$140 PASS, 2019 −$23 narrow FAIL (+$12 before costs). 2019–2026: 6 of 8 years positive, about +$1,130 (+$1,074 in full-year runs with MT5-style exact take-profit fills). Settings map: all 48 neighbouring settings positive over 2021–2026. Volatility-scaled sizing rejected. **Clean 2018 test (run once): the saved intraday version FAILED, −$29 (−$1 before costs, 10% of trades reached the target); the held versions passed (1:3 held +$191, TP $7.5 held +$87).** Risk rebuild under the $50-a-day rules: no version passed its check, and all three locked $50 versions failed 2018 (primary 0.02 lots: −$56). |
 | New York opening-range breakout, half-range stop | `results/candidates/ny_breakout_half_stop.json` | Weakened. +$837 over 2022–2026 but **failed the clean 2021 test (−$361)**. |
 | Scalping bot (fade / breakout / pullback, 1–15 min bars) | `strategies/scalper.py` | **Rejected.** Built on 2021 (most stable year); round-2 pick +$110 in 2021, then lost in all 7 other years (−$560). |
 | Direction-filtered scalps (reaction zone picks the side) | `strategies/bias_scalp.py` | **Rejected.** All 72 versions lost in every year 2019–2026. The direction is worth about +$0.04/oz per scalp (flipped versions lose more in every year), but the $0.20 spread is 5× that. |
@@ -506,3 +506,104 @@ no trade limit. Grid (72 versions): entry at market / on a 1m pullback candle / 
   does not help: the 2 and 10 minute hold limits end most scalps before the target.
 - **Conclusion:** the strategy's side is useful as a filter for discretionary trading (don't trade against
   it once it has entered), but it is not an edge a mechanical scalper can pay the spread with. **Rejected.**
+
+### Walk-forward test of self-adjustment (`experiments/walk_forward.py`, scored on 2021-01 to 2026-10)
+
+Question: does a bot that re-picks its own settings on a schedule beat one that keeps them fixed? Menu of 20
+settings (wick 25/30/35/40% × TP $5/7.5/10/12.5/15, everything else the saved version). Every R months the
+setting with the highest net over the last L months is traded for the next R months (R = 1/3/6, L = 6/12/24).
+Days are independent ($20 refilled daily, flat by 20:00), so a path is each period's trades from the chosen
+setting. Verdict fixed before running: it adds something only if the primary version (every 3 months on the
+last 12) beats the current fixed setting and at least 5 of 9 versions beat the average fixed setting.
+
+| Version | 2021 | 2022 | 2023 | 2024 | 2025 | 2026 | Total | Worst drawdown |
+|---|---|---|---|---|---|---|---|---|
+| Fixed: current (wick 30%, TP $10), also the best of the 20 with hindsight | 132 | 199 | −67 | 133 | 366 | 291 | **+$1,054** | −$184 |
+| Fixed: average of all 20 (a setting picked blind) | 64 | 211 | −55 | −8 | 284 | 118 | +$614 | −$140 |
+| Re-pick every 3 mo on last 12 mo (primary) | 45 | 259 | −110 | 104 | 410 | 289 | +$996 | −$174 |
+| Re-pick every 3 mo on last 6 mo (best of 9) | 79 | 228 | −37 | 105 | 476 | 289 | +$1,139 | −$121 |
+| Re-pick every 6 mo on last 24 mo (worst of 9) | 41 | 203 | −68 | 37 | 345 | 289 | +$847 | −$179 |
+| Perfect pick every month (hindsight, upper bound) | 366 | 425 | 275 | 290 | 794 | 565 | +$2,714 | −$39 |
+
+- **Verdict by the rule: self-adjustment does not add anything.** The primary version made +$996 against
+  +$1,054 for the current fixed setting.
+- **But it picks well without hindsight.** All 9 versions (+$847 to +$1,139) beat the average fixed setting
+  (+$614), and the primary version would rank 4th of 20. The current setting is the best of the 20 only
+  because it was chosen knowing these years, so "fixed" is flattered here.
+- **Why it works a little:** settings that did well over the last 12 months tend to do well over the next 3
+  (rank correlation +0.31, positive in 81% of periods). The link fades with longer horizons (+0.15 for 24 → 6
+  months, +0.03 for 24 → 12).
+- **It does not fix the weak year:** every version lost in 2023, like almost every fixed setting.
+- Use: a safe way to choose and refresh settings (a fixed menu, a fixed rule), not a source of extra profit.
+
+### Risk rebuild under the $50-a-day rules (`experiments/risk_rebuild.py`, 2019–2026, $0.20, full-year runs)
+
+New rules from the user (2026-11-12), replacing $20/day, 0.01 lots, max 2 trades: lose at most $50 a day and
+stop; any number of trades and any size; if the day is red, try to finish at break-even. Built into
+`strategies/reaction_zone.py` (all off by default): `day_cap`, `trade_stop_usd`, `recover` ("target": the next
+trade's take profit is where the day gets back to zero; "size": the next trade is bigger, normal target) and
+`scratch_after` (a trade that has been $5 or $10/oz under water gets its take profit moved to its entry price).
+Grid of 48: 0.01/0.02/0.03/0.05 lots × no stop / $25 stop / $25 stop + recover by target / + recover by size ×
+scratch off/5/10. Account $50 a day, a win still ends the day, trades after a loss unlimited. Selection fixed
+before running: on 2019–2024, profit in at least 4 of 6 years, then highest net ÷ worst drawdown; check on
+2025–2026: profit, and net ÷ drawdown not below the plain version (0.01 lots, no stop, no scratch).
+
+| Version | 2019–24 | Years + | Drawdown | Net ÷ dd | 2025–26 | Net ÷ dd | Total | Days at −$50 |
+|---|---|---|---|---|---|---|---|---|
+| Plain: 0.01 lots, no stop | +343 | 4 of 6 | −229 | 1.50 | +569 | 2.27 | +$912 | 19 |
+| 0.01 lots, $25 stop | +394 | 4 of 6 | −184 | 2.14 | +591 | 3.02 | +$985 | 0 |
+| 0.02 lots, no stop | +785 | 4 of 6 | −373 | 2.10 | +1,161 | 3.29 | +$1,946 | 96 |
+| 0.03 lots, no stop | +671 | 3 of 6 | −666 | 1.01 | +1,835 | 4.93 | +$2,506 | 211 |
+| 0.05 lots, no stop | +1,577 | 3 of 6 | −835 | 1.89 | +1,077 | 1.57 | +$2,654 | 416 |
+| **Pick by the rule: 0.03 lots, $25 stop** | +1,089 | 5 of 6 | −305 | 3.58 | +269 | **0.44** | +$1,358 | 51 |
+| 0.01 lots, no stop, scratch at $5 | +65 | 3 of 6 | −212 | 0.31 | +409 | 2.06 | +$474 | 10 |
+
+- **By the rule, no rebuilt version is adopted.** The pick (0.03 lots, $25 stop: a stop $8.33/oz away) was the
+  best on 2019–2024 and then made +$269 with a −$614 drawdown in 2025–2026 (net ÷ drawdown 0.44 against 2.27).
+- **The daily cap holds:** the worst day of every version is −$50 or better.
+- **Stop distance explains the whole grid.** Profit per 0.01 lot over 2019–2026 by how far price can go against
+  the trade before it is closed: $5/oz +219, $8.3 +453, $10 +531, $12.5 +476, $16.7 +835, $25 +985 (0.01 lots
+  with a $25 stop) and +973 (0.02 lots, the $50 account as the stop), $50 +912. The old rules ($20/oz) made
+  +1,074. Anything tighter than about $17–25/oz closes trades that would have come back. Under a $50 cap that
+  makes 0.02 lots the largest size that still leaves $25/oz of room.
+- **The break-even rule costs money.** Scratch at $5 turned 220 winning trades and 113 losing trades into flat
+  ones (0.01 lots, no stop): flat days rose from 7% to 34%, red days fell from 36% to 27%, and profit halved
+  (+$912 → +$474). A trade that has been $5 under water and gets back to its entry usually goes on to its target.
+- **Recovery has almost nothing to work with.** The strategy rarely signals twice: at 0.01 lots with a $25 stop
+  only 15 of 496 days that started with a loss got another trade. Where there are more second trades (0.02
+  lots, 75 days), recover-by-target ended 26 of them near zero and 41 worse than after the first trade; the later
+  trades netted −$33 (by target), +$51 (by size), +$5 (no recovery). No difference beyond noise.
+- Seen after the fact, not selected by the rule: 0.02 lots with no stop and 0.01 lots with a $25 stop both beat
+  the plain version in both periods. 2025–2026 has now been looked at for these, so only 2018 can test them.
+
+### Clean 2018 test (locked in `results/locked_for_2018.json`, run once on 2026-11-12)
+
+2018: gold −1.6%, $1,160–1,366, the quietest and lowest-priced year tested. 10 locked versions, all on the
+reaction-zone entries, by quarter, pass = net > 0 at $0.20. Before the run the three $50-a-day lock entries
+were checked against the grid on 2026 (same results to the cent).
+
+| Version | Zero cost | $0.20 | + $0.10 slippage | Trades | Win rate | Quarters + | Result |
+|---|---|---|---|---|---|---|---|
+| 1:3 held, 0.01 lots ($10 account) | +210 | **+191** | +189 | 38 | 39.5% | 4/4 | PASS |
+| 1:5 held, volatility-scaled size | +169 | +109 | +33 | 94 | 19.1% | 2/4 | PASS |
+| TP $7.5, held ($20 account) | +72 | +87 | +81 | 74 | 74.3% | 4/4 | PASS |
+| 1:3 held, volatility-scaled size | +142 | +62 | −38 | 114 | 26.3% | 2/4 | PASS |
+| 1:5 held, 0.01 lots ($10 account) | +26 | +17 | +16 | 26 | 26.9% | 3/4 | PASS |
+| TP $7.5, intraday ($20 account) | −3 | −27 | −55 | 153 | 45.8% | 1/4 | FAIL |
+| TP $10, intraday ($20 account), the saved candidate | −1 | **−29** | −58 | 153 | 45.1% | 0/4 | FAIL |
+| $50 a day: 0.01 lots, no stop | −1 | −28 | −57 | 153 | 45.1% | 0/4 | FAIL |
+| $50 a day: 0.01 lots, $25 stop | −1 | −28 | −57 | 153 | 45.1% | 0/4 | FAIL |
+| **$50 a day: 0.02 lots, no stop (primary)** | −1 | **−56** | −114 | 153 | 45.1% | 0/4 | FAIL |
+
+- **Every version that closes by 20:00 UTC failed; every version that holds until target or stop-out passed.**
+- **The intraday versions had no edge in 2018 even before costs** (about −$1 at zero cost). Only 15 of 153
+  trades reached the $10 target (10%; 16% in 2019, 41% in 2021); the other 138 were closed at 20:00 for −$178.
+  The worst day was −$19, so no stop, account size or daily cap was ever touched: risk rules could not have
+  changed this year. Doubling the size only doubled the loss.
+- The saved candidate has now lost in both of the quiet, low-priced years (2018 −$29, 2019 −$23, both clean tests)
+  and in 2023. Its profit comes from the years when gold moves a lot (2020–2022, 2024–2026). The fixed $10
+  intraday target is the weak point, as the 2019 test already suggested.
+- The held versions passed, with caveats: small samples (26–114 trades, t-stats 0.2–1.6), swap is still not
+  modelled and held trades stay open for days, 1:3 and 1:5 held lost in 2019 (−$95, −$145) and in 2026.
+- 2018 is now used. There is no unseen year left before 2018 in the data; new ideas need new data (2017 or
+  earlier) or a live demo forward test.

@@ -14,7 +14,7 @@
 //|  - max 2 orders a day, stop after a win, one position at a time   |
 //+------------------------------------------------------------------+
 #property copyright   "lunch money research"
-#property version     "1.00"
+#property version     "1.10"
 #property description "Reaction-zone strategy, port of the Python backtest. Demo accounts only by default."
 
 #include <Trade/Trade.mqh>
@@ -231,6 +231,11 @@ double dayPnl = 0.0;
 bool   dayStopped = false;
 string stopReason = "";
 ulong  posId = 0;
+// Execution quality (slippage and delay), written to the log as "fill" rows for experiments/demo_slippage.py
+int    fillSide = 0;                      // side of the EA's open position
+double wantEntry = 0, wantExit = 0, wantTp = 0, entrySpread = 0;
+ulong  entryT0 = 0, exitT0 = 0;           // microsecond clock when the order / close was sent
+double entryMs = 0;                       // time OrderSend took to return
 
 //+------------------------------------------------------------------+
 long gOffsetMs = 0;          // server time minus UTC
@@ -354,6 +359,10 @@ void CloseAll(string why)
       if(tk == 0) continue;
       if(PositionGetString(POSITION_SYMBOL) == _Symbol && PositionGetInteger(POSITION_MAGIC) == InpMagic)
         {
+         MqlTick q;
+         SymbolInfoTick(_Symbol, q);
+         wantExit = PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY ? q.bid : q.ask;
+         exitT0 = GetMicrosecondCount();
          if(trade.PositionClose(tk)) Log("close request", why);
          else Log("close failed", StringFormat("%s retcode %d", why, trade.ResultRetcode()));
         }
@@ -498,8 +507,11 @@ void Execute(const MqlTick &t, long ts)
    dayTrades++;
    int side = setup.side;
    double tp = NormalizeDouble(side < 0 ? t.bid - InpTakeProfitUSD : t.ask + InpTakeProfitUSD, _Digits);
+   fillSide = side; wantEntry = side < 0 ? t.bid : t.ask; wantTp = tp; wantExit = 0; entrySpread = spread;
+   entryT0 = GetMicrosecondCount();
    bool sent = (side < 0) ? trade.Sell(InpLots, _Symbol, 0, 0, tp, "reaction zone")
                : trade.Buy(InpLots, _Symbol, 0, 0, tp, "reaction zone");
+   entryMs = (GetMicrosecondCount() - entryT0) / 1000.0;
    setup.active = false;
    uint rc = trade.ResultRetcode();
    if(!sent || (rc != TRADE_RETCODE_DONE && rc != TRADE_RETCODE_PLACED))
@@ -523,7 +535,15 @@ void OnTradeTransaction(const MqlTradeTransaction &tr, const MqlTradeRequest &re
    long magic = HistoryDealGetInteger(tr.deal, DEAL_MAGIC);
    ulong pid = (ulong)HistoryDealGetInteger(tr.deal, DEAL_POSITION_ID);
    long entry = HistoryDealGetInteger(tr.deal, DEAL_ENTRY);
-   if(entry == DEAL_ENTRY_IN && magic == InpMagic) { posId = pid; return; }
+   if(entry == DEAL_ENTRY_IN && magic == InpMagic)
+     {
+      posId = pid;
+      double got = HistoryDealGetDouble(tr.deal, DEAL_PRICE);
+      // slip > 0 = filled worse than the price on screen when the order was sent
+      Log("fill", StringFormat("entry %s wanted %.3f got %.3f slip %.3f send_ms %.0f spread %.3f",
+          fillSide > 0 ? "BUY" : "SELL", wantEntry, got, fillSide * (got - wantEntry), entryMs, entrySpread));
+      return;
+     }
    if(entry != DEAL_ENTRY_OUT && entry != DEAL_ENTRY_OUT_BY) return;
    if(magic != InpMagic && !(posId != 0 && pid == posId)) return;
    double net = HistoryDealGetDouble(tr.deal, DEAL_PROFIT) + HistoryDealGetDouble(tr.deal, DEAL_SWAP)
@@ -533,6 +553,16 @@ void OnTradeTransaction(const MqlTradeTransaction &tr, const MqlTradeRequest &re
    string why = reason == DEAL_REASON_TP ? "take profit" : reason == DEAL_REASON_SL ? "stop loss"
                 : reason == DEAL_REASON_SO ? "broker stop-out" : "closed by EA";
    Log("exit", StringFormat("%s at %.2f, net %.2f", why, HistoryDealGetDouble(tr.deal, DEAL_PRICE), net));
+   if(fillSide != 0)
+     {
+      double got = HistoryDealGetDouble(tr.deal, DEAL_PRICE);
+      double want = reason == DEAL_REASON_TP ? wantTp : wantExit;
+      string kind = reason == DEAL_REASON_TP ? "tp" : reason == DEAL_REASON_SO ? "broker_stopout" : "close";
+      if(want > 0)
+         Log("fill", StringFormat("exit %s wanted %.3f got %.3f slip %.3f send_ms %.0f spread %.3f", kind, want, got,
+             fillSide * (want - got), reason == DEAL_REASON_TP ? 0.0 : (GetMicrosecondCount() - exitT0) / 1000.0,
+             SymbolInfoDouble(_Symbol, SYMBOL_ASK) - SymbolInfoDouble(_Symbol, SYMBOL_BID)));
+     }
    if(posDay >= ruleDay && posDay >= 0)
      {
       RulesFor(posDay);
