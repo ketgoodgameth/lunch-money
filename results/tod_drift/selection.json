@@ -1,0 +1,10 @@
+{
+  "train_year": 2022,
+  "part_b_pick": {
+    "start": 0,
+    "end": 5,
+    "side": -1
+  },
+  "qualifying": 4,
+  "candidates": 330
+}

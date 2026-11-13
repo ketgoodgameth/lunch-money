@@ -1,0 +1,27 @@
+{
+  "train_year": 2022,
+  "markets": [
+    "eurusd",
+    "gbpusd",
+    "usdjpy",
+    "audusd",
+    "usdcad",
+    "usdchf",
+    "xauusd",
+    "xagusd",
+    "brentcmdusd",
+    "lightcmdusd",
+    "usa500idxusd",
+    "usatechidxusd",
+    "deuidxeur",
+    "jpnidxjpy"
+  ],
+  "qualifying": [
+    "momentum 10",
+    "momentum 20"
+  ],
+  "part_b_pick": {
+    "kind": "momentum",
+    "n": 20
+  }
+}

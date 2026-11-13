@@ -1,0 +1,26 @@
+{
+  "A1 12-month momentum, long/short": {
+    "pass": false,
+    "test_total_pct": 74.0,
+    "test_ret_dd": 2.66,
+    "hold_ret_dd": 2.82,
+    "t_11_years": 1.16,
+    "older_total_pct": -14.8
+  },
+  "A2 200-day average, long/flat": {
+    "pass": true,
+    "test_total_pct": 86.7,
+    "test_ret_dd": 4.1,
+    "hold_ret_dd": 2.82,
+    "t_11_years": 2.65,
+    "older_total_pct": 33.1
+  },
+  "B average 50, long/short (picked on 2022)": {
+    "pass": false,
+    "test_total_pct": 71.1,
+    "test_ret_dd": 4.82,
+    "hold_ret_dd": 2.82,
+    "t_11_years": 0.97,
+    "older_total_pct": -20.7
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "rule": "net change <= 10% and range CV <= median; at least 4 newer years; random pick",
+  "seed": 20261113,
+  "eligible": [
+    2018,
+    2021,
+    2022
+  ],
+  "picked": 2022
+}

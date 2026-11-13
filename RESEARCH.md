@@ -10,6 +10,9 @@
 | Scalping bot (fade / breakout / pullback, 1–15 min bars) | `strategies/scalper.py` | **Rejected.** Built on 2021 (most stable year); round-2 pick +$110 in 2021, then lost in all 7 other years (−$560). |
 | Direction-filtered scalps (reaction zone picks the side) | `strategies/bias_scalp.py` | **Rejected.** All 72 versions lost in every year 2019–2026. The direction is worth about +$0.04/oz per scalp (flipped versions lose more in every year), but the $0.20 spread is 5× that. |
 | HFT-style tick bot (burst momentum / fade, seconds to minutes) | `strategies/hft.py` | **Rejected.** None of 24 versions passed on 2021; the best of each mode lost about the spread per trade (−$0.20) on the other eight years, and lost even at zero cost. |
+| Time-of-day drift (one fixed window a day) | `experiments/tod_drift.py` | **No stand-alone strategy.** The window trained on 2022 lost in 10 of 11 other years. The pre-specified overnight long passed its rule on 2023–2026 (+$1,520) but is mostly long-gold exposure: 74% of buy-and-hold's gain, losses in gold's down years. |
+| Daily trend following (momentum, moving average, breakout) | `experiments/trend_daily.py` | **No trading edge.** The rule trained on 2022 failed (negative 2015–2021). The 200-day average, long/flat, passed its rule on 2023–2026 but made less than holding gold over 2016–2026 (+112% vs +144%) with the same drawdown. |
+| Trend following across 14 markets, equal risk | `experiments/trend_multi.py` | **Rejected.** All three rules failed: +1% to +11% over eleven years (t 0.04 to 0.45) against +61% for holding the same markets; negative with 2% a year financing. |
 
 All tests use real Dukascopy ticks (2022–2025), the simulated broker in `xautest/`, and the same rules:
 $10 risk per trade, stop after the first win, max 2 trades, −$20 daily cap enforced by a $20/day account
@@ -814,3 +817,96 @@ strategy keeps only where the stop goes (`stop_dist`, `stop_atr`); its own `risk
 Re-run after the change, identical to before: the saved version on 2026 (125 trades, +$355.74), the old $20-a-day
 version on 2026 (117 trades, +$291.03), and the 3% and 10% compounding runs for all nine years
 (`portfolio_growth.py confirm`, every year-end balance unchanged).
+
+## Time-of-day drift (`experiments/tod_drift.py`, `experiments/pick_training_year.py`), trained on 2022
+
+The reaction zone work stopped after the 2015–2017 test. New method from the user: train on a random stable year,
+test on newer years. Stable = net change ≤ 10% and day-to-day range variation at or below the median of
+2015–2026; eligible = stable with at least 4 newer years (2018, 2021, 2022); seeded random pick: **2022**.
+Test: 2023–2026. Second check: 2015–2021.
+
+Idea: hold one fixed window a day, 1 oz, no stop, $0.20 cost. All rules were written into the script before any
+hourly data was looked at. Part A: two windows taken from published work on the London fixings, no fitting.
+Part B: the best of 330 UTC windows on 2022 (positive after costs, both half-years, ≥ 8 of 12 months, neighbours
+positive too; highest t). Pass on 2023–2026: total > 0, ≥ 3 of 4 years positive, t ≥ 2; a long window must also
+beat the average long window of the same length in ≥ 3 of 4 years.
+
+| Window | 2022 (train) | Test 2023–2026 | Years + | t | Older 2015–2021 | Result |
+|---|---|---|---|---|---|---|
+| B: short 00:00–05:00 UTC (picked on 2022, t 1.21 there) | +$115 | −$967 | 1 of 4 | −2.12 | −$437, 1 of 7 | **FAIL** |
+| A1: short 10:30–15:00 London (morning to afternoon fix) | −$50 | −$513 | 0 of 4 | −0.92 | −$81, 3 of 7 | **FAIL** |
+| A2: long 15:00–10:30 London, Mon–Thu (overnight) | −$117 | +$1,520 | 3 of 4 | +2.21 | +$442, 4 of 7 | PASS by the rule |
+
+- **Training on one year picked noise.** The best of 330 windows on 2022 had a t of 1.2, less than chance alone
+  usually gives, and it lost in 10 of the 11 other years. In 2022 the average move in any hour was within ±2.4 bp;
+  the spread is about 1 bp.
+- **The short between the fixes does not exist** after costs in any period.
+- **The overnight long passes the rule, but it is mostly being long gold.** It is in the market about 65% of the
+  time and made 74% of what holding 1 oz made over 2023–2026 (+$1,520 vs +$2,048), and 68% over 2015–2021 (+$442
+  vs +$645). It lost in the years gold fell or went nowhere (2015, 2018, 2021, 2022, 2026).
+- **There is a small timing tilt:** per trade it beat a long of the same length started at any other hour in 10 of
+  12 years, typically by $0.2–0.5 (2022 and 2026 are the exceptions, 2026 by −$1.67). That is about the size of the
+  spread, so it cannot be traded on its own, and overnight swap ($0.10–0.40/oz a night tested: +$1,402 to +$1,049)
+  comes off it.
+- The same-length comparison for A2 was in the written rule but missing from the first run of the test; it was
+  added and the test re-run. It did not change the verdict.
+- **Conclusion: no stand-alone strategy.** Hour-of-day effects in gold are 1–2 bp, the same size as the cost.
+  What made money here is direction (gold rose), not timing.
+
+## Daily trend following (`experiments/trend_daily.py`), trained on 2022
+
+One price a day (mid at 20:00 UTC), position +1 / 0 / −1 oz changed at that price, $0.10 per side, no swap in the
+base case. Rules written into the script before any trend result was looked at. Part A: two published rules, no
+fitting. Part B: best of 28 (momentum, moving average, breakout; long/short and long/flat) on 2022 by return ÷
+drawdown, with both half-years and both neighbours positive. Pass: 2023–2026 positive in ≥ 3 of 4 years and a
+better return ÷ drawdown than holding one ounce; t ≥ 2 over the eleven years outside 2022; 2015–2021 positive.
+
+| Rule | 2022 (train) | Test 2023–2026 (% of price) | Worst drawdown | Return ÷ dd | Older 2015–2021 | t, 11 years | Result |
+|---|---|---|---|---|---|---|---|
+| Holding one ounce (comparison) | +0.8% | +83.0% | −29.4% | 2.82 | +49.9% | — | — |
+| A1: 12-month momentum, long/short | −27.8% | +74.0%, 2 of 4 years | −27.8% | 2.66 | −14.8% | 1.16 | **FAIL** |
+| A2: 200-day average, long/flat | −8.8% | +86.7%, 4 of 4 years | −21.1% | 4.10 | +33.1% | 2.65 | PASS by the rule |
+| B: 50-day average, long/short (picked on 2022) | +16.4% | +71.1%, 3 of 4 years | −14.8% | 4.82 | −20.7% | 0.97 | **FAIL** |
+
+- **The rule trained on 2022 failed**: strong in 2025–2026 (+38%, +31%, the short side paid in 2026) but negative
+  in 5 of the 7 older years.
+- **The 200-day rule passes, and it is still just gold.** Checked afterwards, outside the rule: over 2016–2026 it
+  made +112% against +144% for holding, with the same worst drawdown (−30% vs −29%), and it beat holding in only
+  3 of 11 years (2016 +0.4, 2018 +2.0, 2026 +8.3 points; behind by 32 points in total, t −1.25). Every nearby
+  setting (50 to 300 days) also made less than holding. It passed because gold rose and because it stepped aside
+  for part of the 2026 fall; the pass rule only compared it with holding inside 2023–2026.
+- Long swap of $0.10–0.40/oz a night takes the 200-day rule's test result from +$2,359 to between +$2,242 and
+  +$1,891 per ounce.
+- Size: 0.01 lots is one ounce, about $3,900 of gold. On a $1,000 account that is nearly 4× leverage, and a 21–30%
+  fall in price is $800–1,150 per ounce. Holding gold unlevered with $1,000 needs a cent account.
+- **Conclusion: no trading edge.** As with the overnight window, what made money is gold's direction. A trend rule
+  on one market is a way of holding that market, not a source of profit by itself; the published evidence for
+  trend following is across many markets at once.
+
+## Trend following across 14 markets (`experiments/trend_multi.py`), trained on 2022
+
+Six currency pairs, gold, silver, Brent, US crude and four stock indices; hourly Dukascopy bid candles from 2014,
+one price a day at about 20:00 UTC. Each market sized to the same risk (1% a day ÷ its 60-day volatility), the
+portfolio is the average. Spread charged on every change of size; no financing in the base case. All rules were
+written into the script before the data was downloaded. Part A: 12-month momentum, and a 1/3/12-month blend, no
+fitting. Part B: the best of 11 lookbacks on 2022 (20-day momentum). Pass needs all five: 2023–2026 positive in
+≥ 3 of 4 years; t ≥ 2 over the eleven years outside 2022; 2015–2021 positive; return ÷ drawdown above holding all
+14 long, in the test window and over the eleven years; at least half the markets positive.
+
+| Rule | 2022 (train) | Test 2023–2026 | Older 2015–2021 | Eleven years | t | With 2% financing, eleven years | Result |
+|---|---|---|---|---|---|---|---|
+| All 14 long at equal risk (comparison) | −3.0% | +38.7% | +22.3% | +61.0%, dd −19.1% | 2.53 | — | — |
+| A1: 12-month momentum | +3.7% | +15.4% | −4.6% | +10.7%, dd −22.1% | 0.45 | −20.9% | **FAIL** |
+| A2: 1/3/12-month blend | +1.9% | +6.5% | −2.5% | +4.1%, dd −14.5% | 0.21 | −17.2% | **FAIL** |
+| B: 20-day momentum (picked on 2022) | +5.2% | −1.6% | +2.7% | +1.1%, dd −16.2% | 0.04 | −30.5% | **FAIL** |
+
+- **All three fail, and none comes close.** The best made about 1% a year over eleven years; simply holding the 14
+  markets made five to six times as much with a similar drawdown.
+- **Where the little profit came from:** the stock indices and gold, which mostly went up, so a trend rule was
+  mostly long them. The currency pairs lost in every version (dollar-franc and dollar-yen the most).
+- **Financing would settle it on its own.** At 2% a year on the positions held, every version is negative over the
+  eleven years. Whether the user's account is swap-free on all 14 markets is not verified.
+- Caveats on the comparison: 2015–2021 is known as a poor stretch for trend following, and this set has no bond
+  or interest-rate markets, which is where much of trend following's profit has come from; a retail CFD account
+  cannot trade those cheaply. That explains the result; it does not rescue it.
+- **Conclusion: no edge.** Rejected.

@@ -1,0 +1,39 @@
+== comparison: all markets long at equal risk, % by year ==
+    2015  2016  2017  2018  2019  2020  2021  2022  2023  2024  2025  2026
+%  -4.5   2.8  14.7  -7.2   8.8   0.1   7.7  -3.0   8.8  11.5  11.6   6.8
+  2023-2026: {'days': 1000, 'total %': 38.7, 'worst dd %': -8.5, 'ret/dd': 4.56, 't': 2.79, 'yearly vol %': 7.0}
+  eleven years outside 2022: {'days': 2827, 'total %': 61.0, 'worst dd %': -19.1, 'ret/dd': 3.19, 't': 2.53, 'yearly vol %': 7.2}
+
+== A1 12-month momentum ==
+    2015  2016  2017  2018  2019  2020  2021  2022  2023  2024  2025  2026
+%   6.8 -16.7   8.6  -7.0  -1.5   5.3  -0.1   3.7  -0.6   4.2   8.9   2.9
+  test 2023-2026: {'days': 1000, 'total %': 15.4, 'worst dd %': -7.5, 'ret/dd': 2.06, 't': 1.16, 'yearly vol %': 6.7}; 3 of 4 years positive
+  older 2015-2021: {'days': 1827, 'total %': -4.6, 'worst dd %': -22.1, 'ret/dd': -0.21, 't': -0.23, 'yearly vol %': 7.5}
+  eleven years outside 2022: {'days': 2827, 'total %': 10.7, 'worst dd %': -22.1, 'ret/dd': 0.49, 't': 0.45, 'yearly vol %': 7.2}
+  by market over those eleven years, %: {'jpnidxjpy': 7.6, 'usatechidxusd': 5.3, 'xauusd': 5.2, 'usa500idxusd': 4.3, 'audusd': 2.3, 'xagusd': 2.3, 'brentcmdusd': 1.8, 'lightcmdusd': 1.8, 'deuidxeur': 0.3, 'eurusd': -0.6, 'gbpusd': -2.2, 'usdcad': -3.7, 'usdjpy': -5.4, 'usdchf': -8.3}
+  with financing 2% a year: test 4.1%, eleven years -20.9%, t -0.87
+  with financing 4% a year: test -7.1%, eleven years -52.5%, t -2.18
+  -> FAIL (1 test positive, 3 of 4 years: True; 2 t >= 2: False; 3 older positive: False; 4 beats all-long on return/drawdown in both spans: False; 5 half the markets positive: True)
+
+== A2 1/3/12-month momentum blend ==
+    2015  2016  2017  2018  2019  2020  2021  2022  2023  2024  2025  2026
+%  -0.1  -7.7   1.4   2.1  -2.2   8.5  -4.5   1.9   1.6  -0.5   5.1   0.3
+  test 2023-2026: {'days': 1000, 'total %': 6.5, 'worst dd %': -5.3, 'ret/dd': 1.24, 't': 0.61, 'yearly vol %': 5.4}; 3 of 4 years positive
+  older 2015-2021: {'days': 1827, 'total %': -2.5, 'worst dd %': -14.5, 'ret/dd': -0.17, 't': -0.15, 'yearly vol %': 6.0}
+  eleven years outside 2022: {'days': 2827, 'total %': 4.1, 'worst dd %': -14.5, 'ret/dd': 0.28, 't': 0.21, 'yearly vol %': 5.8}
+  by market over those eleven years, %: {'jpnidxjpy': 4.9, 'usatechidxusd': 4.5, 'usa500idxusd': 4.2, 'xauusd': 3.8, 'lightcmdusd': 1.9, 'brentcmdusd': 1.0, 'deuidxeur': -0.6, 'audusd': -1.0, 'xagusd': -1.0, 'eurusd': -1.5, 'gbpusd': -1.6, 'usdcad': -1.9, 'usdjpy': -2.9, 'usdchf': -5.7}
+  with financing 2% a year: test -1.1%, eleven years -17.2%, t -0.89
+  with financing 4% a year: test -8.7%, eleven years -38.5%, t -1.98
+  -> FAIL (1 test positive, 3 of 4 years: True; 2 t >= 2: False; 3 older positive: False; 4 beats all-long on return/drawdown in both spans: False; 5 half the markets positive: False)
+
+== B momentum 20 (picked on 2022) ==
+    2015  2016  2017  2018  2019  2020  2021  2022  2023  2024  2025  2026
+%  -4.4  -3.6  -2.2   5.9  -0.1  11.9  -4.9   5.2  -1.3  -2.1   1.6   0.1
+  test 2023-2026: {'days': 1000, 'total %': -1.6, 'worst dd %': -8.4, 'ret/dd': -0.19, 't': -0.11, 'yearly vol %': 7.3}; 2 of 4 years positive
+  older 2015-2021: {'days': 1827, 'total %': 2.7, 'worst dd %': -15.9, 'ret/dd': 0.17, 't': 0.13, 'yearly vol %': 7.6}
+  eleven years outside 2022: {'days': 2827, 'total %': 1.1, 'worst dd %': -16.2, 'ret/dd': 0.07, 't': 0.04, 'yearly vol %': 7.5}
+  by market over those eleven years, %: {'jpnidxjpy': 5.7, 'brentcmdusd': 5.0, 'lightcmdusd': 3.8, 'usatechidxusd': 3.6, 'usa500idxusd': 2.1, 'xauusd': 1.4, 'usdcad': 0.2, 'xagusd': -1.2, 'eurusd': -1.9, 'gbpusd': -1.9, 'usdjpy': -3.2, 'usdchf': -3.4, 'audusd': -3.6, 'deuidxeur': -5.5}
+  with financing 2% a year: test -12.9%, eleven years -30.5%, t -1.22
+  with financing 4% a year: test -24.1%, eleven years -62.2%, t -2.48
+  -> FAIL (1 test positive, 3 of 4 years: False; 2 t >= 2: False; 3 older positive: True; 4 beats all-long on return/drawdown in both spans: False; 5 half the markets positive: True)
+

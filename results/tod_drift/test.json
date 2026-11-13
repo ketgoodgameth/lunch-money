@@ -1,0 +1,20 @@
+{
+  "A1 short 10:30-15:00 London": {
+    "pass": false,
+    "total": -512.5,
+    "years_positive": 0,
+    "t": -0.92
+  },
+  "A2 long 15:00-10:30 London (overnight)": {
+    "pass": true,
+    "total": 1519.8,
+    "years_positive": 3,
+    "t": 2.21
+  },
+  "B short 00:00-05:00 UTC": {
+    "pass": false,
+    "total": -966.8,
+    "years_positive": 1,
+    "t": -2.12
+  }
+}

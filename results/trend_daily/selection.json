@@ -1,0 +1,12 @@
+{
+  "train_year": 2022,
+  "qualifying": [
+    "average 50, long/short",
+    "average 50, long/flat"
+  ],
+  "part_b_pick": {
+    "kind": "average",
+    "n": 50,
+    "short": true
+  }
+}
